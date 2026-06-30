@@ -48,7 +48,8 @@ The code is MIT licensed, so feel free to tune a local version or fork it. I am 
 git clone https://tangled.org/diego.codes/skepticism
 cd skepticism
 
-# Register this local checkout as a marketplace and install the plugin.
-claude plugin marketplace add .
-claude plugin install skeptic@skepticism
+# Run Claude Code with your local checkout loaded as a plugin (session-only).
+# This uses your working copy, so you test your edits — unlike `plugin install`,
+# which clones the published version from the marketplace source.
+claude --plugin-dir .
 ```
