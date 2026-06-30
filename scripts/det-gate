@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# det-gate — the deterministic gate (phase 5). Runs the cheap, ungameable checks
+# (lint, format, typecheck, tests) BEFORE any LLM reviewer is spawned, because
+# they catch the bulk of issues for free.
+#
+# Auto-detects the stack. Runs every check that applies, collects failures, and
+# exits non-zero if ANY failed. Customize per-project by creating an executable
+# `.skepticism/det-gate.sh` at the repo root — if present, it is run instead.
+#
+# Usage: det-gate            (run from the project repo root)
+set -uo pipefail
+
+# Project override hook ------------------------------------------------------
+if [[ -x ".skepticism/det-gate.sh" ]]; then
+  exec ./.skepticism/det-gate.sh
+fi
+
+failures=()
+ran_any=0
+
+run() {
+  local label="$1"; shift
+  ran_any=1
+  echo "──► ${label}: $*"
+  if "$@"; then
+    echo "    ✓ ${label} passed"
+  else
+    echo "    ✗ ${label} FAILED"
+    failures+=("$label")
+  fi
+  echo
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# Pick the JS package manager if this is a Node project.
+js_pm() {
+  if [[ -f pnpm-lock.yaml ]] && have pnpm; then echo pnpm
+  elif [[ -f yarn.lock ]] && have yarn; then echo yarn
+  elif have npm; then echo npm
+  fi
+}
+# Run an npm script only if it is defined in package.json.
+js_script() { # <pm> <script>
+  local pm="$1" script="$2"
+  node -e "process.exit(require('./package.json').scripts?.['$script']?0:1)" 2>/dev/null \
+    && run "$script" "$pm" run "$script"
+}
+
+# --- Node / TypeScript ------------------------------------------------------
+if [[ -f package.json ]]; then
+  pm="$(js_pm)"
+  if [[ -n "${pm:-}" ]]; then
+    js_script "$pm" lint
+    js_script "$pm" format:check
+    js_script "$pm" typecheck
+    js_script "$pm" test
+  fi
+fi
+
+# --- Python -----------------------------------------------------------------
+if [[ -f pyproject.toml || -f setup.cfg || -n "$(ls -1 *.py 2>/dev/null)" ]]; then
+  have ruff   && run "ruff"        ruff check .
+  have ruff   && run "ruff-format" ruff format --check .
+  have mypy   && run "mypy"        mypy .
+  have pytest && run "pytest"      pytest -q
+fi
+
+# --- Rust -------------------------------------------------------------------
+if [[ -f Cargo.toml ]] && have cargo; then
+  run "cargo-fmt"   cargo fmt --check
+  run "cargo-clippy" cargo clippy -- -D warnings
+  run "cargo-test"  cargo test
+fi
+
+# --- Go ---------------------------------------------------------------------
+if [[ -f go.mod ]] && have go; then
+  run "gofmt"   bash -c '[[ -z "$(gofmt -l .)" ]]'
+  run "go-vet"  go vet ./...
+  run "go-test" go test ./...
+fi
+
+# --- Verdict ----------------------------------------------------------------
+echo "════════════════════════════════════════════"
+if [[ "$ran_any" -eq 0 ]]; then
+  echo "det-gate: no known checks detected for this project."
+  echo "Add an executable .skepticism/det-gate.sh to define your own."
+  exit 0
+fi
+if [[ "${#failures[@]}" -gt 0 ]]; then
+  echo "det-gate: FAILED → ${failures[*]}"
+  exit 1
+fi
+echo "det-gate: all checks passed ✓"

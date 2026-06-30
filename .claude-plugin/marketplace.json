@@ -1,0 +1,14 @@
+{
+  "name": "skepticism",
+  "owner": {
+    "name": "Diego Vicente",
+    "email": "mail@diego.codes"
+  },
+  "plugins": [
+    {
+      "name": "skeptic",
+      "source": "./",
+      "description": "Adversarial, spec-first verification workflow: spec → red tests → review tests → implement → review implementation, driven by a state machine with risk-tiered subagent panels."
+    }
+  ]
+}

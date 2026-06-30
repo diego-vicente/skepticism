@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""gate-check — PreToolUse hook that enforces the test-first gate.
+
+Blocks edits to *source* files while an active skepticism run is still in a
+pre-implementation phase (spec / red-tests / test-review). This makes the
+"no production code before the tests are written and reviewed" gate ungameable
+by the model — prose alone gets rationalized away.
+
+Design principles:
+- OPT-IN: only activates when an active run exists in the project (a state.md
+  under docs/skepticism/<slug>/). With no active run it allows everything, so
+  the plugin never interferes with normal work in other repos.
+- FAIL-OPEN: any parsing/IO error allows the edit. A buggy gate must never
+  brick the user's ability to edit files.
+- Edits to tests, to the run's own docs, and to .skepticism/ config are always
+  allowed — you must be able to write the tests during the test phases.
+"""
+import sys, os, json, glob, re
+
+PRE_IMPL_PHASES = {"spec", "red-tests", "test-review"}
+TEST_PATH_RE = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(_test|test_|\.test|\.spec)\.", re.I)
+
+
+def allow():
+    sys.exit(0)
+
+
+def deny(reason: str):
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": reason,
+        }
+    }))
+    sys.exit(0)
+
+
+def main():
+    try:
+        payload = json.load(sys.stdin)
+    except Exception:
+        allow()  # fail-open
+
+    tool_input = payload.get("tool_input", {}) or {}
+    target = tool_input.get("file_path") or tool_input.get("path") or ""
+    if not target:
+        allow()
+
+    target_abs = os.path.abspath(target)
+
+    # Find active runs blocking implementation.
+    blocking = []
+    for state_file in glob.glob("docs/skepticism/*/state.md"):
+        try:
+            text = open(state_file, encoding="utf-8").read()
+        except Exception:
+            continue
+        m = re.search(r"^- phase:\s*(\S+)", text, re.M)
+        if m and m.group(1).strip() in PRE_IMPL_PHASES:
+            blocking.append(state_file)
+
+    if not blocking:
+        allow()
+
+    # Always-allowed targets even during the gate:
+    #  - tests (you must write them now)
+    #  - the run's own docs/skepticism artifacts
+    #  - .skepticism/ project config
+    rel = os.path.relpath(target_abs, os.getcwd())
+    if (TEST_PATH_RE.search(rel)
+            or rel.startswith("docs/skepticism" + os.sep)
+            or rel.startswith(".skepticism" + os.sep)):
+        allow()
+
+    deny(
+        "skepticism gate: an active run is in a pre-implementation phase "
+        f"({', '.join(blocking)}). Production code is blocked until the tests "
+        "are written and pass the adversarial review (phase 3). Write/adjust "
+        "tests, or advance the run's state to 'implement' once test-review passes."
+    )
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        allow()  # fail-open on any unexpected error

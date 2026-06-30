@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# consolidate — fold a finished run into a one-page index and archive its
+# artifacts, so the live `docs/skepticism/` directory (and the context the
+# controller loads at routing time) stays bounded as runs accumulate.
+#
+# The controller authors the rich digest in INDEX.md (it knows the decisions);
+# this script provides the plumbing: ensure the index exists, append a stub
+# entry pulled from state.md, and move the run dir under archive/.
+#
+# Usage: consolidate <slug>     (run from the project repo root)
+set -euo pipefail
+
+root="docs/skepticism"
+slug="${1:?usage: consolidate <slug>}"
+dir="${root}/${slug}"
+index="${root}/INDEX.md"
+archive="${root}/archive"
+
+[[ -d "$dir" ]] || { echo "no such run: $dir" >&2; exit 1; }
+
+feature="$(grep -m1 '^- feature:' "$dir/state.md" 2>/dev/null | sed 's/^- feature:[[:space:]]*//')"
+tier="$(grep -m1 '^- tier:' "$dir/state.md" 2>/dev/null | sed 's/^- tier:[[:space:]]*//')"
+today="$(date +%Y-%m-%d)"
+
+if [[ ! -f "$index" ]]; then
+  cat > "$index" <<EOF
+# Skepticism — completed runs index
+
+One line per finished feature. Full artifacts live under \`archive/<slug>/\`.
+The controller reads this at routing time instead of scanning every run.
+
+EOF
+fi
+
+# Append a stub the controller can enrich with decisions/links.
+cat >> "$index" <<EOF
+## ${slug} — ${feature:-(no summary)} (${today})
+- tier: ${tier:-unknown}
+- artifacts: archive/${slug}/
+- decisions: <controller fills in the key decisions / REQ coverage here>
+
+EOF
+
+mkdir -p "$archive"
+git mv "$dir" "$archive/$slug" 2>/dev/null || mv "$dir" "$archive/$slug"
+echo "consolidated ${slug} → ${archive}/${slug}; indexed in ${index}"

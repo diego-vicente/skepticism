@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# state — minimal helper for the skepticism run directory.
+# Deliberately small: the controller skill edits state.md with its own file
+# tools. This script only creates the run directory and a template on first use,
+# and resolves paths. (YAGNI — we are not building a state engine in bash.)
+#
+# Usage:
+#   state init <slug> ["one-line feature summary"]   create run dir + template
+#   state path <slug>                                print the state.md path
+#   state dir  <slug>                                print the run directory
+set -euo pipefail
+
+root="docs/skepticism"
+cmd="${1:?usage: state init|path|dir <slug>}"
+slug="${2:?missing <slug>}"
+dir="${root}/${slug}"
+file="${dir}/state.md"
+
+case "$cmd" in
+  dir)  echo "$dir" ;;
+  path) echo "$file" ;;
+  init)
+    summary="${3:-<one-line summary>}"
+    mkdir -p "$dir"
+    if [[ -f "$file" ]]; then
+      echo "$file"   # already exists; resume
+      exit 0
+    fi
+    cat > "$file" <<EOF
+# Skepticism run: ${slug}
+
+- feature: ${summary}
+- tier: standard
+- phase: spec
+- updated: (set by controller)
+
+## Phase log
+- [ ] spec          → spec.md
+- [ ] red-tests     → tests-report.md
+- [ ] test-review   → test-review.md
+- [ ] implement     →
+- [ ] det-gate      → det-gate.log
+- [ ] impl-review   → impl-review.md
+- [ ] report
+
+## Notes
+EOF
+    echo "$file"
+    ;;
+  *) echo "unknown command: $cmd" >&2; exit 2 ;;
+esac

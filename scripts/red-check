@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# red-check — confirm the test suite is genuinely RED before implementation.
+#
+# Phase 2's discipline is "failing tests first." This makes it a deterministic
+# gate instead of taking the test-author's word: it RUNS the suite and requires
+# that it does NOT pass. A suite that passes with no implementation means the
+# tests don't actually exercise the missing behavior — a vacuous red.
+#
+# It also flags the difference between FAILURES (assertions failing — the right
+# kind of red) and ERRORS (import/collection/syntax — the wrong kind, the test
+# is broken, not the feature missing), best-effort per stack.
+#
+# Auto-detects the stack. Override with an executable `.skepticism/red-check.sh`.
+#
+# Exit codes:
+#   0  valid RED  — suite fails due to test failures (proceed)
+#   1  NOT RED    — suite passes (tests don't test the missing behavior)
+#   2  BROKEN RED — suite errors (import/collection/syntax) — fix the tests
+#   3  unknown    — could not detect a runner
+set -uo pipefail
+
+if [[ -x ".skepticism/red-check.sh" ]]; then
+  exec ./.skepticism/red-check.sh
+fi
+
+have() { command -v "$1" >/dev/null 2>&1; }
+ERROR_RE='(ImportError|ModuleNotFoundError|SyntaxError|collection error|errors during collection|Cannot find module|cannot find name|no such file|compilation (error|failed)|error\[E[0-9]|undefined reference)'
+
+# Run a test command; classify the result.
+classify() { # <label> <cmd...>
+  local label="$1"; shift
+  echo "──► ${label}: $*"
+  local out rc
+  out="$("$@" 2>&1)"; rc=$?
+  echo "$out" | tail -n 40
+  echo
+  if [[ $rc -eq 0 ]]; then
+    echo "red-check: NOT RED — '${label}' passed with no implementation."
+    echo "Your tests do not exercise the missing behavior. Fix the tests."
+    exit 1
+  fi
+  if echo "$out" | grep -Eiq "$ERROR_RE"; then
+    echo "red-check: BROKEN RED — '${label}' errored (import/collection/syntax),"
+    echo "not a clean assertion failure. The tests are broken, not the feature."
+    exit 2
+  fi
+  echo "red-check: valid RED — '${label}' fails on assertions, as it should."
+  exit 0
+}
+
+# --- Node / TS --------------------------------------------------------------
+if [[ -f package.json ]]; then
+  if have pnpm && [[ -f pnpm-lock.yaml ]]; then PM=pnpm
+  elif have yarn && [[ -f yarn.lock ]]; then PM=yarn
+  elif have npm; then PM=npm; fi
+  if [[ -n "${PM:-}" ]] && node -e "process.exit(require('./package.json').scripts?.test?0:1)" 2>/dev/null; then
+    classify "test" "$PM" test
+  fi
+fi
+# --- Python -----------------------------------------------------------------
+if have pytest && { [[ -f pyproject.toml || -f setup.cfg ]] || ls -1 test_*.py *_test.py tests/ >/dev/null 2>&1; }; then
+  classify "pytest" pytest -q
+fi
+# --- Rust -------------------------------------------------------------------
+if [[ -f Cargo.toml ]] && have cargo; then classify "cargo test" cargo test; fi
+# --- Go ---------------------------------------------------------------------
+if [[ -f go.mod ]] && have go; then classify "go test" go test ./...; fi
+
+echo "red-check: could not detect a test runner. Add .skepticism/red-check.sh."
+exit 3

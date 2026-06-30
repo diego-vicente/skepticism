@@ -1,0 +1,22 @@
+{
+  "name": "skeptic",
+  "version": "0.1.0",
+  "description": "An adversarial, spec-first verification workflow for Claude Code: define a spec, author red tests, adversarially review the tests, implement against quality rules, then adversarially review the implementation — driven by a state machine with risk-tiered subagent panels.",
+  "author": {
+    "name": "Diego Vicente",
+    "email": "mail@diego.codes"
+  },
+  "homepage": "https://github.com/diego-vicente/skepticism",
+  "repository": "https://github.com/diego-vicente/skepticism",
+  "license": "MIT",
+  "keywords": [
+    "verification",
+    "adversarial",
+    "tdd",
+    "spec-driven",
+    "code-review",
+    "workflow",
+    "state-machine"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

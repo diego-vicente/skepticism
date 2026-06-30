@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# package-diff — produce ONE self-contained diff file for reviewers to read,
+# so each reviewer subagent reads a prepared artifact instead of re-exploring
+# the repo (the main token-saving lever in phase 6).
+#
+# Usage:
+#   package-diff <base> [head]
+#     base   git ref to diff from (e.g. the commit before implementation)
+#     head   git ref to diff to; if omitted, diffs base..working-tree
+#
+# Prints the path to the generated markdown file on stdout.
+set -euo pipefail
+
+base="${1:?usage: package-diff <base> [head]}"
+head="${2:-}"
+
+out="$(mktemp -t skepticism-diff.XXXXXX)"
+out="${out}.md"
+
+{
+  if [[ -n "$head" ]]; then
+    echo "# Diff package: ${base}..${head}"
+    range_log="${base}..${head}"
+  else
+    echo "# Diff package: ${base}..<working tree>"
+    range_log="${base}..HEAD"
+  fi
+  echo
+
+  echo "## Commits"
+  git log --oneline "$range_log" 2>/dev/null || echo "(no commits in range)"
+  echo
+
+  echo "## Stat"
+  git diff --stat "$base" ${head:+"$head"}
+  echo
+
+  echo "## Untracked files (not in diff below)"
+  git ls-files --others --exclude-standard || true
+  echo
+
+  echo "## Full diff (10 lines of context)"
+  echo '```diff'
+  git diff -U10 "$base" ${head:+"$head"}
+  echo '```'
+} > "$out"
+
+echo "$out"
