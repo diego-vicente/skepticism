@@ -1,5 +1,6 @@
 {
   "name": "skepticism",
+  "description": "Adversarial, spec-first agentic development framework.",
   "owner": {
     "name": "Diego Vicente",
     "email": "mail@diego.codes"
@@ -7,8 +8,11 @@
   "plugins": [
     {
       "name": "skeptic",
-      "source": "./",
-      "description": "Adversarial, spec-first verification workflow: spec → red tests → review tests → implement → review implementation, driven by a state machine with risk-tiered subagent panels."
+      "source": {
+        "source": "url",
+        "url": "https://tangled.org/diego.codes/skepticism"
+      },
+      "description": "Adversarial, spec-first agentic development framework."
     }
   ]
 }
