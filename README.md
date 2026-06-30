@@ -5,7 +5,7 @@ An adversarial, spec-first verification workflow for [Claude Code](https://claud
 ## How to install
 
 ```
-/plugin marketplace add diego-vicente/skepticism
+/plugin marketplace add https://tangled.org/diego.codes/skepticism
 /plugin install skeptic@skepticism
 ```
 
