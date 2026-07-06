@@ -29,9 +29,13 @@ code. All paths are under this plugin's root.
 3. Implement the **simplest** design that satisfies the spec and passes the
    tests. Nothing extra — no speculative abstraction, config, or options the
    spec didn't ask for (YAGNI).
-4. Write by the essentials: simplest design, no swallowed errors, validate at
-   boundaries, no magic numbers, nesting ≤ 3, names reveal intent, comments
-   explain *why*, don't over-decompose.
+4. Write by the essentials (you read them first): simplest design, no swallowed
+   errors, validate/parse at boundaries, no magic numbers, nesting ≤ 3, names
+   reveal intent, comments explain *why*, don't over-decompose. The essentials'
+   **Security & dependencies** and **Scope & shape of the change** rules apply in
+   full here — parameterized queries, no hardcoded/logged secrets, least
+   privilege, no new/unverified dependency without justification, and no drive-by
+   refactor bundled into the behavior change.
 5. Run lint/format/typecheck/tests locally until green.
 6. Self-review against the checklist below.
 
@@ -47,7 +51,11 @@ code. All paths are under this plugin's root.
 - [ ] Implements exactly the spec — nothing missing, nothing extra (YAGNI).
 - [ ] Simplest design that works; no abstraction I can't justify by rule-of-three.
 - [ ] All acceptance criteria covered, including edge cases and error paths.
-- [ ] No swallowed errors; inputs validated at boundaries.
+- [ ] No swallowed errors; inputs validated at boundaries; errors are actionable.
+- [ ] Security defaults met (parameterized queries, no hardcoded/logged secrets,
+      hostile-input handling, least privilege) where the code touches input/IO.
+- [ ] No new dependency I can't justify; no import of an unverified package.
+- [ ] Change is scoped to the spec; no unrelated refactor bundled in.
 - [ ] No magic numbers; names reveal intent; nesting ≤ 3; not over-decomposed.
 - [ ] Comments explain *why*; no commented-out code; public API has a contract.
 - [ ] I did not modify tests; or I did and flagged each change with a reason.

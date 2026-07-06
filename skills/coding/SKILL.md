@@ -266,14 +266,13 @@ Future runs read the one-page INDEX, not every past run's full artifacts.
 
 ## Resolving plugin paths
 
-Reference docs and scripts live inside this plugin, at `reference/` and
-`scripts/`. Paths below are written as `${CLAUDE_PLUGIN_ROOT}/…`. If that
-variable is already expanded to an absolute path when you read this, use it
-directly. If you see the literal string `${CLAUDE_PLUGIN_ROOT}`, resolve the
-plugin root once at the start of the run — e.g. find the directory containing
-this plugin's `reference/spec-format.md` with a quick `Glob`/`Bash`
-search — and substitute the real absolute path into every subagent prompt.
-Subagents get the resolved absolute paths, never the variable.
+Reference docs and scripts live inside this plugin at `reference/` and
+`scripts/`, addressed below as `${CLAUDE_PLUGIN_ROOT}/…`. Claude Code expands
+that variable to an absolute path inline before you read this, so use the paths
+as-is and pass the resolved absolute paths to subagents. (Fallback, only if you
+ever see the literal `${CLAUDE_PLUGIN_ROOT}` unexpanded on a very old Claude
+Code: resolve it once by `Glob`-ing for this plugin's `reference/spec-format.md`
+and substitute the real path.)
 
 ## Dispatch contract (cost discipline)
 

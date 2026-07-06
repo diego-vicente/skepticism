@@ -10,14 +10,12 @@ downstream phase. Three layers, each feeding the next:
    (requirement → scenario → test) is *mechanically* checkable, not a judgment
    call. This is what lets the test-adversary verify completeness objectively.
 
-Why this and not alternatives:
-- **EARS** constrains each requirement to one unambiguous, testable claim. It's
-  what removes the drift that lets an agent "technically satisfy" a vague spec.
-  (Same notation AWS Kiro uses.)
-- **Given/When/Then** stays as the human-readable scenario layer.
-- We deliberately **do not** use full Gherkin/Cucumber: it's executable but
-  drags in step-definition glue code that rots. We get runnable acceptance
-  tests by *deriving* them from the spec with REQ-ID traceability instead.
+Why these choices: **EARS** forces each requirement into one unambiguous,
+testable claim (the same notation AWS Kiro uses), removing the drift that lets an
+agent "technically satisfy" a vague spec; **Given/When/Then** is the
+human-readable scenario layer. Do **not** use full Gherkin/Cucumber — its
+step-definition glue rots; derive runnable acceptance tests from the REQ-IDs
+instead.
 
 ## EARS patterns (use the one that fits)
 

@@ -32,7 +32,10 @@ far more often by over-abstracting than under-abstracting.
   about as complicated as its body earns nothing and just adds a hop.
 - **Pull complexity downward.** Better for the *implementer* of a module to
   absorb a little complexity than to push it onto every *caller*. Make the
-  common case easy from the outside.
+  common case easy from the outside. Concretely: prefer a sensible computed or
+  hard-coded default over exposing a configuration knob — every parameter pushes
+  a decision onto callers who understand the internals less than you do. Add the
+  knob only when a real caller needs a different value.
 - This is why "many tiny functions" can be a net loss: it multiplies shallow
   interfaces. Prefer fewer, deeper units.
 
@@ -40,9 +43,21 @@ far more often by over-abstracting than under-abstracting.
 - Encode invariants in types/data structures so bad states can't be constructed,
   instead of validating them at every use site.
 - **Parse, don't validate:** turn untrusted input into a trusted shape once at
-  the boundary, then rely on the type inside rather than re-checking everywhere.
+  the boundary, then rely on the type inside. A checker that returns `bool`/void
+  discards what it learned; a parse that returns the refined type (behind a
+  private constructor + a `parse()`/smart constructor) makes the value itself
+  proof it's valid.
 - Prefer enums/sum-types/smart constructors over stringly-typed flags and
-  boolean soup.
+  boolean soup. Replace co-varying boolean flags (`isLoading` + `data?` +
+  `error?`) with one sum type whose variants carry exactly their state's data.
+- **Names aren't safety.** A newtype `UserId` over `string` stops argument
+  mix-ups but does *not* guarantee the value is valid — only a validating hidden
+  constructor does. Don't imply the strong guarantee when you've built the weak
+  one.
+- Know the ceiling: most type systems can't cheaply encode cross-field or
+  "this int is prime" invariants, and pushing too hard yields baroque types
+  harder to read than a guard clause. A smart constructor with a runtime check
+  is often the right stopping point.
 
 ## Coupling & cohesion
 - High cohesion (a unit does one thing) and low coupling (few, well-defined

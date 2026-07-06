@@ -38,6 +38,12 @@ duplication or complexity demands it.
   docstring. Over-commenting is as much a smell as under-commenting.
 - **Modules:** deep modules with simple interfaces; cohesion high, coupling low.
 - **Magic numbers/strings** named with context.
+- **Scope & change shape:** is the diff scoped to the spec, or does it smuggle in
+  an unrelated refactor/cleanup alongside the behavior change? A logic change
+  buried in churn is hard to review — flag bundling.
+- **Dependencies:** any new dependency that the stdlib or an existing dep could
+  cover, or that isn't justified? Any imported package whose existence looks
+  unverified?
 
 ## Verdict (return exactly this shape)
 ```

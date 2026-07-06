@@ -24,8 +24,12 @@ hard to break this and couldn't.
 - **Error handling:** swallowed exceptions, unhandled failure paths, partial
   failure leaving inconsistent state, missing rollback/cleanup.
 - **Concurrency/ordering/idempotency** where the spec implies them.
-- **Hallucinated APIs:** calls to functions/flags that may not exist — verify
-  suspicious ones.
+- **Security defaults** on any input/IO/DB path: input interpolated into
+  SQL/shell/HTML instead of parameterized (incl. an interpolated table/column
+  name that parameterization doesn't cover), hardcoded or logged secrets,
+  over-broad privileges, untrusted input reaching a sink unvalidated.
+- **Hallucinated APIs or packages:** calls or imports that may not exist —
+  verify suspicious ones (invented package names are a real supply-chain risk).
 - **Reward-hacking smell:** logic that looks tailored to the test's exact inputs
   rather than general (hand any concrete instance to the test-integrity verdict
   too, but flag it here as a correctness risk).

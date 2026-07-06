@@ -9,6 +9,11 @@ The mental model for every test you write: **"If I introduced an obvious bug
 here — flipped a `>` to `>=`, returned a constant, dropped an element — would
 this test fail?"** If not, the test asserts nothing useful. Strengthen it.
 
+**Sections:** 1. Test behavior, not implementation · 2. Choosing WHAT to test
+(partitioning, boundaries, risk, integration bias) · 3. Choosing WHAT to assert
+(Right-BICEP) · 4. Oracle discipline · 5. Properties · 6. FIRST · 7. Structure
+(AAA, DAMP) · 8. AI test anti-patterns.
+
 ---
 
 ## 1. Prime directive: test behavior, not implementation
@@ -104,10 +109,19 @@ perturbed (e.g. swapping synonyms shouldn't change a classification).
   assert two unrelated things, split it.
 - **Descriptive names**: `returns_401_when_password_invalid`, not `test_2`.
 - **Tag the REQ-ID(s)** the test covers in a comment, e.g. `// REQ-2`.
+- **No logic in a test body** — no loops, conditionals, or computed expected
+  values. Logic in a test can be wrong the same way the code is; a reader must
+  verify the expectation by eye. If you'd need a test to check your test,
+  it's wrong.
+- **DAMP over DRY.** Unlike production code, tests favor *Descriptive And
+  Meaningful Phrases* over deduplication: a little inlined, repeated setup that
+  keeps each test readable top-to-bottom beats a shared helper that hides what's
+  under test. Complete (body has everything needed to understand the result) and
+  concise (nothing else). The readability bar is high; the abstraction bar is low.
 - **Tests are code too.** They follow the same readability and comment policy as
-  production code (the coding essentials): concise but clear, no commented-out
-  code, comment only the non-obvious *why* (e.g. why an edge case matters), and
-  match the surrounding test conventions.
+  production code (the coding essentials): no commented-out code, comment only
+  the non-obvious *why* (e.g. why an edge case matters), and match the
+  surrounding test conventions.
 
 ## 8. AI test anti-patterns — do NOT do these
 

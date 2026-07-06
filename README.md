@@ -30,10 +30,10 @@ That will automatically include the `skeptic` plugin, which contains all the fol
 
 ## How to use
 
-As most agentic programming frameworks, `skepticism` cornerstone are specifications: before the actual coding, the assistant will create a document defining what's to be done and how to verify its compliance. That's what the adversarial agents cling on to: how much adherence to the pre-existing spec the previous agent achieved. Using the skill `\skeptic:spec`, the agent will help the user define a human-readable document and find blind spots in the specification.
+Like most agentic programming frameworks, `skepticism`'s cornerstone is the specification: before any coding, the assistant creates a document defining what's to be done and how to verify compliance. That's what the adversarial agents cling to — how well the previous agent adhered to the pre-existing spec. Using the `/skeptic:spec` skill, the agent helps you define a human-readable document and find blind spots in the specification.
 
-Once an specification is in place, `\skeptic:coding` will start a rigid process in which:
-1. It reads the spec and understands it. A spec (from `\skeptic:spec` or other source) is required for this process.
+Once a specification is in place, `/skeptic:coding` starts a rigid process in which:
+1. It reads the spec and understands it. A spec (from `/skeptic:spec` or other source) is required for this process.
 2. It implements failing tests. Adversarial subagents are spawned to verify the usefulness, compliance and quality of those tests.
 3. It implements the code until the tests are green. Adversarial subagents are once more spawned to verify quality and compliance of the code produced.
 4. The result is reported to the user. If there was some hiccup or further iteration is needed, the agent may prompt the user to iterate back to any of the points before or clarify the spec.
@@ -53,3 +53,13 @@ cd skepticism
 # which clones the published version from the marketplace source.
 claude --plugin-dir .
 ```
+
+The plugin ships its own eval harness under `evals/` — deterministic script tests
+plus adversarial behavioral scenarios that verify the workflow does what it
+promises. Run the hermetic subset (no API needed) before sending a change:
+
+```sh
+bash evals/run.sh --ci
+```
+
+See `evals/README.md` for the behavioral and triggering tiers.

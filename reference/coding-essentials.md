@@ -10,6 +10,10 @@ Favor the smallest change that solves the actual problem. Default to less code,
 not more — but readable beats terse. The next reader (human or agent) is the
 audience: code is read far more often than it is written.
 
+**Sections:** Simplicity · Readability & organization · Naming · Comments (why,
+not what) · Reliability basics · Security & dependencies · Scope & shape of the
+change · Don't trim these · Avoid (LLM code smells) · Situational references.
+
 ## Simplicity (the prime directive)
 - **YAGNI.** Build what was asked, not hypothetical futures. Over-engineering
   dressed as good practice is the #1 failure mode of generated code.
@@ -39,8 +43,10 @@ audience: code is read far more often than it is written.
 - Names reveal intent — infer purpose without reading the body.
 - Verbs for functions (`calculateTax`), nouns for values (`taxRate`),
   affirmative booleans (`isValid`, not `notInvalid`).
-- Length matches scope (`i` in a 3-line loop is fine; a field is not). No
-  unexplained abbreviations. One term per concept across the codebase.
+- Length matches scope (`i` in a 3-line loop is fine; a field is not). Prefer
+  full words; domain-standard abbreviations (`id`, `url`, `ctx`, `req`) are fine
+  — the real enemy is single letters and cryptic ad-hoc shortenings. One term
+  per concept across the codebase.
 - **No magic numbers/strings** — name them as constants with context.
 
 ## Comments (why, not what)
@@ -54,11 +60,39 @@ audience: code is read far more often than it is written.
   remembers), decorative banners. A stale comment is worse than none.
 
 ## Reliability basics
-- **Validate at boundaries**, trust inside.
+- **Validate at boundaries**, trust inside. Better: **parse, don't validate** —
+  a checker returning `bool`/void throws away what it learned; return the
+  narrowed type (or a `Result`) so the proof travels with the value and inner
+  code needn't re-check.
 - **Never swallow exceptions** — handle meaningfully or propagate with context.
   An empty `catch` is a hidden bug.
 - Fail loud for programmer errors; fail gracefully for expected conditions.
-(Deeper: idempotency, hidden state, concurrency, resources → reliability ref.)
+- **Errors must be actionable** — an error/log line should let whoever hits it
+  reproduce the failure: what was attempted, with which values, why it failed.
+(Deeper: idempotency, hidden state, concurrency, resources, observability,
+security → reliability ref.)
+
+## Security & dependencies (always on for input / IO / dependency code)
+- **Treat external input as hostile.** Parameterize every query — prepared
+  statements for SQL; never string-build SQL, shell, or HTML from input. (Values
+  parameterize; identifiers like table/column names do not — allowlist those.)
+- **No secrets in source or logs.** Read keys/tokens/passwords from env or a
+  secret manager; least privilege by default (narrowest scope the task needs).
+- **Dependencies are liabilities.** Prefer stdlib → a dep already in the project
+  → (last resort) a new one, vetted for maintenance health and license. A need
+  of a few lines rarely justifies a package — but don't reinvent crypto/auth/TLS;
+  a well-audited library beats bespoke there.
+- **Never import a package you haven't verified exists.** Generated code invents
+  plausible-but-fake names (measured ~1 in 5); a made-up name is a supply-chain
+  hole (slopsquatting). Verify against the registry or don't add it.
+
+## Scope & shape of the change
+- **Don't mix a refactor with a behavior change.** Rename/move/reformat with
+  behavior identical and tests still green; change behavior separately. A logic
+  change buried in a wall of churn is exactly where bugs slip past review.
+- **Keep the change scoped to the spec.** No drive-by cleanups or unrelated
+  edits. The reviewer (human or agent) has a hard attention limit; a smaller,
+  focused diff is verified far more reliably than a large one.
 
 ## Don't trim these
 Brevity stops at correctness. Never cut input validation at trust boundaries,
@@ -67,9 +101,10 @@ anything explicitly requested. When clarity and brevity conflict, choose clarity
 
 ## Avoid (LLM code smells)
 Speculative generality; config/interfaces/factories for one case;
-"manager/helper/util" grab-bags; hallucinated APIs (verify a call exists);
-copy-paste duplication; silently skipped edge cases; catch-all error swallowing
-"for robustness".
+"manager/helper/util" grab-bags; hallucinated APIs or packages (verify they
+exist); copy-paste duplication; silently skipped edge cases; catch-all error
+swallowing "for robustness"; string-built SQL/shell; hardcoded or logged
+secrets; bundling an unrelated refactor into a behavior change.
 
 ---
 
@@ -77,7 +112,8 @@ copy-paste duplication; silently skipped edge cases; catch-all error swallowing
 - **Designing modules, types, or abstractions** (SOLID, DRY/rule-of-three,
   composition vs inheritance, deep modules, illegal-states-unrepresentable) →
   `design-and-abstraction.md`
-- **Stateful / IO / concurrent / retryable code** (idempotency, immutability,
-  resource cleanup, concurrency) → `reliability.md`
+- **Stateful / IO / concurrent / retryable / production code** (idempotency,
+  immutability, resource cleanup, concurrency, observability, security defaults)
+  → `reliability.md`
 - **Choosing what to test and what to assert** (boundary analysis, Right-BICEP,
   oracles, property-based & metamorphic testing) → `test-authoring-guide.md`

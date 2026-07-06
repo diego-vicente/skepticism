@@ -1,9 +1,11 @@
 # Reliability (situational reference)
 
-Consult this when the code holds state, does IO, can be retried, or runs
-concurrently — where correctness depends on more than the happy-path logic. The
-always-on basics (validate at boundaries, never swallow exceptions, fail
-loud/graceful) live in `coding-essentials.md`; this expands the rest.
+Consult this when the code holds state, does IO, can be retried, runs
+concurrently, crosses a trust boundary, or has to be operated in production —
+where correctness depends on more than the happy-path logic. The always-on
+basics (validate at boundaries, never swallow exceptions, fail loud/graceful,
+security & dependency essentials) live in `coding-essentials.md`; this expands
+the rest.
 
 ## Error handling (deeper)
 - **Validate at trust boundaries**, then trust the value inside. Don't scatter
@@ -43,3 +45,29 @@ loud/graceful) live in `coding-essentials.md`; this expands the rest.
 - Clean up files, connections, locks, handles **deterministically** — use the
   language's scope-based mechanism (`with`/`defer`/`try-with-resources`/RAII)
   rather than hoping a manual close runs on every path, including error paths.
+
+## Observability
+- **Structured logs, not prose.** Emit key/value or JSON carrying context — a
+  correlation/request id, the operation, the relevant inputs — so logs can be
+  sliced during an incident. Concatenated prose can't be aggregated.
+- **Actionable errors** (the operator's side of "propagate with context"): the
+  line should let whoever is on call reproduce the failure without adding more
+  logging.
+- For a service, make the failure paths and the golden signals (latency,
+  traffic, errors, saturation) observable *before* shipping, not after the first
+  outage.
+- **Don't log secrets or PII**, and don't "log everything" — verbose/high-
+  cardinality logging costs money and leaks data. Log the right fields. (Log4Shell
+  was triggered by logging attacker-controlled input.)
+
+## Security defaults
+The always-on rules — treat input as hostile, parameterize queries (values, not
+identifiers — allowlist those), no secrets in source/logs, least privilege,
+don't roll your own crypto/auth/TLS — are the single source in
+`coding-essentials.md`. In stateful/production code, add only the depth beyond
+them:
+- The parameterization gap extends to **LDAP** and `ORDER BY` direction, not just
+  SQL/shell/HTML — anywhere untrusted input reaches an interpreter needs the same
+  values-parameterize-but-identifiers-must-be-allowlisted treatment.
+- **Rotate on exposure.** Treat any secret that ever landed in VCS history or a
+  log as compromised and rotate it — deleting the line is not enough.
