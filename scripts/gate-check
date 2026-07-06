@@ -18,7 +18,7 @@ Design principles:
 import sys, os, json, glob, re
 
 PRE_IMPL_PHASES = {"spec", "red-tests", "test-review"}
-TEST_PATH_RE = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(_test|test_|\.test|\.spec)\.", re.I)
+TEST_PATH_RE = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(^|/)test_|(_test|\.test|\.spec)\.", re.I)
 
 
 def allow():
