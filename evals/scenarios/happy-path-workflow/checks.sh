@@ -16,19 +16,20 @@ post() {
     _ck_ok "spec.md authored with REQ- ids"
   else _ck_bad "no spec.md with REQ- ids under docs/skepticism/"; rc=1; fi
 
-  # AC2 — the suite passes against the final implementation.
-  need_file "$WORK/slug.py"                               || rc=1
-  need_cmd  bash -c "cd '$WORK' && python3 -m pytest -q"  || rc=1
+  # AC2 — the suite passes against the final implementation. The fixture project
+  # uses stdlib unittest (no pytest dependency), so run that.
+  need_file "$WORK/slug.py"                                        || rc=1
+  need_cmd  bash -c "cd '$WORK' && python3 -m unittest discover -q" || rc=1
 
   # AC3 — the skill ran and dispatched the phase-6 panel.
   tx_skill_called      "$WORK/transcript.jsonl" "skeptic:coding" || rc=1
   tx_agents_dispatched "$WORK/transcript.jsonl" 2                || rc=1
 
-  # AC4 — the run reached report/done and left no stray mutation.
+  # AC4 — the run reached report/done. (No tree-clean check here: a build
+  # workflow is SUPPOSED to add slug.py + its tests — new files are the point.)
   if grep -qhE 'phase:\s*(report|done)' "$WORK"/docs/skepticism/*/state.md 2>/dev/null; then
     _ck_ok "state reached phase report/done"
   else _ck_bad "run never reached phase report/done"; rc=1; fi
-  need_tree_clean "$WORK"                                  || rc=1
 
   return $rc
 }

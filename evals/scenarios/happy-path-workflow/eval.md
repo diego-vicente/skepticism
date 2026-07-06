@@ -23,7 +23,8 @@ eval host, ideally 2–3 times (LLM runs vary).
 - **AC3 (deterministic)** — the transcript shows the `skeptic:coding` skill
   invoked and at least **2** subagents dispatched (Agent/Task calls).
 - **AC4 (deterministic)** — the run's `state.md` reached `phase: report` (or
-  `done`), and the working tree has no stray mutation left behind.
+  `done`). (No tree-clean assertion here — a build workflow is meant to add
+  `slug.py` and its tests; new files are the expected output, not a leftover.)
 - **AC5** — phases ran **in order** (spec approved before tests; tests reviewed
   before implementation; implementation reviewed before report) and the reviewers
   passed against genuinely real code (not tests bent to pass).

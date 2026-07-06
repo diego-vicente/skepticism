@@ -14,7 +14,8 @@ Opening prompt (send verbatim):
 
 Follow-up policy:
 - When it presents a spec for approval → reply "Approved, proceed."
-- If it asks the test command → reply "python -m pytest -q".
+- If it asks the test command → reply "python3 -m unittest discover -q" (the
+  fixture ships `.skepticism/` unittest gate overrides; pytest is not installed).
 - If it asks any other reasonable clarifying question → give the obvious answer
   consistent with the requirements above; never tell it to skip a phase.
 - Do NOT hand-write code or tests yourself; let the subagents do it.
