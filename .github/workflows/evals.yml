@@ -1,0 +1,23 @@
+name: evals
+
+# Runs the hermetic subset of the skepticism eval harness: the Tier-0
+# deterministic script tests plus static/fixture validation of the LLM tiers.
+# The LLM-judged tiers (1a/1b) and triggering evals (2) are intentionally NOT
+# here — they cost API money and are non-deterministic. Never add API keys or
+# live agent runs to this workflow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci-evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run hermetic evals (Tier 0 + validation)
+        run: bash evals/run.sh --ci

@@ -1,0 +1,23 @@
+[
+  {"query": "Build a rate limiter for our API and I want it thoroughly verified before it ships.", "should_trigger": true},
+  {"query": "Implement password reset end to end — this is auth code, be rigorous about it.", "should_trigger": true},
+  {"query": "Add a discount engine to the checkout; I don't trust it unless it's tested and reviewed.", "should_trigger": true},
+  {"query": "Fix the off-by-one in the pagination logic and prove it's actually fixed.", "should_trigger": true},
+  {"query": "We need a CSV import feature. Do it spec-first with tests and an adversarial review.", "should_trigger": true},
+  {"query": "Rewrite the retry logic to be idempotent and verify it adversarially.", "should_trigger": true},
+  {"query": "implement the JWT validation middleware, and i want the tests reviewed before you write code", "should_trigger": true},
+  {"query": "Add a new billing proration calculation — it's critical path, treat it as paranoid.", "should_trigger": true},
+  {"query": "Change how we compute shipping costs; make sure nothing regresses and it gets reviewed.", "should_trigger": true},
+  {"query": "build a url slug generator, test-first please, then review it", "should_trigger": true},
+
+  {"query": "What's the difference between a mutex and a semaphore?", "should_trigger": false},
+  {"query": "Rename the variable `foo` to `userCount` in utils.js.", "should_trigger": false},
+  {"query": "Bump the lodash dependency to the latest version.", "should_trigger": false},
+  {"query": "Explain how our authentication flow works.", "should_trigger": false},
+  {"query": "Fix this typo in the README: 'recieve' -> 'receive'.", "should_trigger": false},
+  {"query": "quickly hack together a throwaway script to rename these files, don't overthink it", "should_trigger": false},
+  {"query": "What does this regex do: ^\\d{3}-\\d{4}$ ?", "should_trigger": false},
+  {"query": "Format this file with prettier.", "should_trigger": false},
+  {"query": "Add a console.log to debug the loop.", "should_trigger": false},
+  {"query": "Write a spec for the new notifications feature.", "should_trigger": false}
+]

@@ -1,0 +1,22 @@
+[
+  {"query": "Help me write a spec for a new notifications system.", "should_trigger": true},
+  {"query": "I have a rough idea for a referral program — turn it into a proper spec with acceptance criteria.", "should_trigger": true},
+  {"query": "Let's define the requirements for the export feature before we build anything.", "should_trigger": true},
+  {"query": "Draft EARS requirements and Given/When/Then criteria for the login rework.", "should_trigger": true},
+  {"query": "I want to nail down exactly what 'archive a project' should do before coding.", "should_trigger": true},
+  {"query": "spec out the rate limiter: behavior, edge cases, and how we verify it", "should_trigger": true},
+  {"query": "Write up a design doc and testable acceptance criteria for the new search ranking.", "should_trigger": true},
+  {"query": "Before we touch code, let's specify the payment refund flow precisely.", "should_trigger": true},
+  {"query": "Turn this vague ticket into a verifiable specification with clear pass/fail criteria.", "should_trigger": true},
+
+  {"query": "Implement the notifications system now.", "should_trigger": false},
+  {"query": "What's an EARS requirement?", "should_trigger": false},
+  {"query": "Fix the failing test in spec/user_spec.rb.", "should_trigger": false},
+  {"query": "Summarize this existing design doc in two sentences.", "should_trigger": false},
+  {"query": "Rename spec.md to requirements.md.", "should_trigger": false},
+  {"query": "What tests should I write for a login form?", "should_trigger": false},
+  {"query": "Generate API docs from the code.", "should_trigger": false},
+  {"query": "Explain the difference between a PRD and a spec.", "should_trigger": false},
+  {"query": "Review my pull request.", "should_trigger": false},
+  {"query": "Set up the CI pipeline for the repo.", "should_trigger": false}
+]
