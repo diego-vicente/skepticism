@@ -38,6 +38,18 @@ Once a specification is in place, `/skeptic:coding` starts a rigid process in wh
 3. It implements the code until the tests are green. Adversarial subagents are once more spawned to verify quality and compliance of the code produced.
 4. The result is reported to the user. If there was some hiccup or further iteration is needed, the agent may prompt the user to iterate back to any of the points before or clarify the spec.
 
+Two things the workflow will stop and ask you about, rather than deciding on your behalf:
+
+- **Test cost.** When an acceptance criterion can't be tested both faithfully and cheaply — it needs a trained model, a seeded database, a new harness — the test author writes what fits your existing suite, and hands you the rest as a choice: build the scaffolding, accept a lower-fidelity mock, or defer it as a known gap. Deferred criteria are recorded and reported back at the end; the framework will happily leave a hole, but never a quiet one.
+- **Commits.** It can commit after each phase (which is what makes re-reviewing only the delta possible), but it asks first and always works on a branch.
+
+
+## It leaves no trace
+
+`skepticism` is a way of working, not a dependency your project takes on. Nothing about it reaches the remote: no requirement IDs or process commentary in your code or tests, no framework references in commit messages, and no committed artifacts. Specs, coverage maps and run state all live under `.skepticism/`, which is excluded through `.git/info/exclude` — local to your clone, never pushed. Writing that exclusion into `.gitignore` would itself commit a reference to the framework, which rather defeats the point.
+
+This is enforced, not just asked for: `leak-check` runs as part of the deterministic gate before any reviewer is spawned, and a project's own gate override can't switch it off. The cost of the trade is that the index of past runs is local to the machine you worked on.
+
 
 ## Contributing
 

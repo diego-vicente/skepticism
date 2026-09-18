@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# leak-check — enforce Iron Rule 6 (leave no trace) deterministically.
+#
+# The framework is a way of working, not something the project depends on, and
+# nothing about it should be visible to whoever reads the repo or the PR. Prose
+# alone doesn't hold that line — an agent will happily annotate a test with
+# `# REQ-3` because it reads as good practice. So this is a gate.
+#
+# What it checks:
+#   1. No run artifact is tracked by git (.skepticism/, legacy docs/skepticism/).
+#   2. .skepticism/ is actually ignored (the local exclude is in place).
+#   3. No framework marker appears in *added* lines of code/test files.
+#   4. No framework marker appears in commit messages in the range.
+#
+# Only ADDED lines are scanned, so a project that legitimately writes "REQ-4" in
+# its own pre-existing files is never flagged. Escape hatch: one extended regex
+# per line in `.skepticism/leak-allow`; matching findings are dropped.
+#
+# Usage: leak-check [base-ref]     (run from the project repo root)
+#   With a base ref, scans base..HEAD plus the working tree, and the commit
+#   messages in that range. Without one, scans the working tree against HEAD.
+set -uo pipefail
+
+ROOT=".skepticism"
+LEGACY_ROOT="docs/skepticism"
+ALLOW_FILE="${ROOT}/leak-allow"
+
+# Markers that identify this framework, lowercase (matching is case-insensitive).
+# Narrow on purpose: each is something a project would not write on its own —
+# except REQ-n, which is traceability that now belongs in coverage.md instead of
+# a source comment.
+MARKER_RE='req-[0-9]+|skepticism|skeptic:|test-adversary|mutation-adversary|reviewer-correctness|reviewer-quality|reviewer-test-integrity|test-author|det-gate|red-check'
+
+# The rule is about code, tests, and history. Prose is the project's own
+# business, so markdown and friends are out of scope.
+SKIP_PATH_RE='(^|/)[.]skepticism/|(^|/)docs/skepticism/|[.](md|markdown|rst|txt)$'
+
+base="${1:-}"
+findings=()
+
+git rev-parse --git-dir >/dev/null 2>&1 || {
+  echo "leak-check: not a git repository — nothing can leak. Skipping."
+  exit 0
+}
+
+# Drop anything the project has explicitly allowed.
+filter_allowed() {
+  if [[ -s "$ALLOW_FILE" ]]; then
+    grep -Ev -f "$ALLOW_FILE" || true
+  else
+    cat
+  fi
+}
+
+add_finding() { findings+=("$1"); }
+add_lines() { while IFS= read -r l; do [[ -n "$l" ]] && findings+=("    $l"); done <<< "$1"; }
+
+# --- 1. No tracked artifacts -------------------------------------------------
+tracked="$(git ls-files -- "$ROOT" "$LEGACY_ROOT" 2>/dev/null)"
+if [[ -n "$tracked" ]]; then
+  add_finding "tracked run artifacts — these would reach the remote:"
+  add_lines "$tracked"
+  add_finding "    fix: git rm --cached -r ${ROOT} ${LEGACY_ROOT} && scripts/state protect"
+fi
+
+# --- 2. The local exclude is in place ---------------------------------------
+# check-ignore is pure pattern matching, so a synthetic path is a fine probe.
+if ! git check-ignore -q "${ROOT}/probe" 2>/dev/null; then
+  add_finding "${ROOT}/ is not ignored — run 'scripts/state protect' to add the local exclude"
+fi
+
+# --- 3. Markers in added lines ----------------------------------------------
+# No base ⇒ working tree vs HEAD. With a base ⇒ the whole range, so a marker
+# committed mid-run is still caught after the fact.
+offenders="$(git diff -U0 ${base:+"$base"} -- . 2>/dev/null | awk \
+  -v skip="$SKIP_PATH_RE" -v marker="$MARKER_RE" '
+    /^\+\+\+ / { path = $0; sub(/^\+\+\+ ([ab]\/)?/, "", path)
+                 skipping = (path ~ skip); next }
+    /^\+/      { if (skipping || path == "") next
+                 line = substr($0, 2)
+                 if (tolower(line) ~ marker) print path "\t" line }
+  ' | filter_allowed)"
+if [[ -n "$offenders" ]]; then
+  add_finding "framework markers in added code/test lines:"
+  add_lines "$offenders"
+  add_finding "    fix: delete the marker — requirement traceability lives in coverage.md now"
+fi
+
+# --- 4. Markers in commit messages ------------------------------------------
+if [[ -n "$base" ]]; then
+  msgs="$(git log --format='%h %s%n%b' "${base}..HEAD" 2>/dev/null \
+    | grep -Ei "$MARKER_RE" | filter_allowed)"
+  if [[ -n "$msgs" ]]; then
+    add_finding "framework markers in commit messages — these push to the remote:"
+    add_lines "$msgs"
+    add_finding "    fix: reword (git commit --amend / rebase -i) to describe the feature, not the process"
+  fi
+fi
+
+# --- Verdict -----------------------------------------------------------------
+if [[ "${#findings[@]}" -gt 0 ]]; then
+  echo "leak-check: FAILED — the framework is visible to anyone reading this repo."
+  printf '  ✗ %s\n' "${findings[@]}"
+  exit 1
+fi
+echo "leak-check: clean ✓ — no framework traces in tracked files, added lines, or history"

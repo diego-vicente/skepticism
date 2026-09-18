@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 # consolidate — fold a finished run into a one-page index and archive its
-# artifacts, so the live `docs/skepticism/` directory (and the context the
+# artifacts, so the live `.skepticism/runs/` directory (and the context the
 # controller loads at routing time) stays bounded as runs accumulate.
 #
 # The controller authors the rich digest in INDEX.md (it knows the decisions);
 # this script provides the plumbing: ensure the index exists, append a stub
 # entry pulled from state.md, and move the run dir under archive/.
 #
+# Everything here lives under `.skepticism/`, which is excluded from git locally
+# (see `state protect`) — the index is this machine's memory of past runs, not
+# project documentation, and it never reaches the remote.
+#
 # Usage: consolidate <slug>     (run from the project repo root)
 set -euo pipefail
 
-root="docs/skepticism"
+ROOT=".skepticism"
 slug="${1:?usage: consolidate <slug>}"
-dir="${root}/${slug}"
-index="${root}/INDEX.md"
-archive="${root}/archive"
+dir="${ROOT}/runs/${slug}"
+index="${ROOT}/INDEX.md"
+archive="${ROOT}/archive"
 
 [[ -d "$dir" ]] || { echo "no such run: $dir" >&2; exit 1; }
 
@@ -37,10 +41,10 @@ cat >> "$index" <<EOF
 ## ${slug} — ${feature:-(no summary)} (${today})
 - tier: ${tier:-unknown}
 - artifacts: archive/${slug}/
-- decisions: <controller fills in the key decisions / REQ coverage here>
+- decisions: <controller fills in the key decisions / requirement coverage here>
 
 EOF
 
 mkdir -p "$archive"
-git mv "$dir" "$archive/$slug" 2>/dev/null || mv "$dir" "$archive/$slug"
+mv "$dir" "$archive/$slug"
 echo "consolidated ${slug} → ${archive}/${slug}; indexed in ${index}"

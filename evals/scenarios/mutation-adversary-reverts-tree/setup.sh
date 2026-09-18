@@ -30,11 +30,23 @@ import unittest
 from pricing import total
 
 class TestTotal(unittest.TestCase):
-    def test_total(self):   # REQ-1
+    def test_total(self):
         self.assertEqual(total([2, 3]), 5)
 
 if __name__ == "__main__":
     unittest.main()
+EOF
+
+# The tests carry no REQ-ID comments, so this map is the adversary's only guide
+# to which node ought to kill a given mutation — and to REQ-2 having no guard
+# at all, which is where a survivor is most likely.
+cat > coverage.md <<'EOF'
+# Coverage map: total
+
+| REQ / AC | Test node ID | Status |
+|---|---|---|
+| REQ-1 | test_pricing.py::TestTotal::test_total | covered |
+| REQ-2 | — | MISSING |
 EOF
 
 printf '__pycache__/\n*.pyc\n' > .gitignore

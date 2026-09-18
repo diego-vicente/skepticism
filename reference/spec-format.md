@@ -6,9 +6,15 @@ downstream phase. Three layers, each feeding the next:
 1. **Requirements** in **EARS** notation, each with a stable `REQ-ID`.
 2. **Acceptance criteria** as **Given/When/Then** scenarios, each citing the
    `REQ-ID`s it exercises.
-3. **Traceability**: tests carry their `REQ-ID` in a comment, so coverage
-   (requirement → scenario → test) is *mechanically* checkable, not a judgment
-   call. This is what lets the test-adversary verify completeness objectively.
+3. **Traceability**: a `coverage.md` artifact maps each `REQ-ID` and criterion to
+   a runnable **test node ID**, so coverage (requirement → scenario → test) is
+   *mechanically* checkable, not a judgment call. This is what lets the
+   test-adversary verify completeness objectively.
+
+REQ-IDs live in `spec.md` and `coverage.md` — both inside the run directory,
+which never reaches the remote. They must **not** appear in production code or
+test files (see the coding essentials); a repo carries its own history, not the
+process that produced it.
 
 Why these choices: **EARS** forces each requirement into one unambiguous,
 testable claim (the same notation AWS Kiro uses), removing the drift that lets an
@@ -74,6 +80,33 @@ Explicit non-goals — what we are deliberately NOT building (YAGNI boundary).
 ## Open questions
 Should be empty before approval.
 ```
+
+## The coverage map (`coverage.md`)
+
+Written by the test-author in phase 2, verified by the test-adversary in phase 3,
+re-checked by `reviewer-test-integrity` in phase 6. It is the only place
+requirement traceability is recorded.
+
+```markdown
+# Coverage map: <slug>
+
+| REQ / AC | Test node ID | Status |
+|---|---|---|
+| REQ-1 | tests/test_login.py::test_issues_token_on_valid_credentials | covered |
+| REQ-2 | tests/test_login.py::test_rejects_invalid_password | covered |
+| AC3   | tests/test_login.py::test_rejects_when_locked | deferred |
+
+## Deferred (accepted coverage gaps)
+- AC3 — needs a seeded locked-account fixture (~40s per run) — we lose the
+  lockout-path assertion entirely — accepted by user on 2026-07-27
+```
+
+Two properties make this stronger than the comments it replaces:
+- **Node IDs are runnable.** A claim of coverage can be executed, not just read.
+  A reviewer resolves `path::test_name` and checks what it actually asserts.
+- **Gaps are explicit.** A criterion may be deferred *only* by a user decision
+  recorded here. An undeclared gap is a critical finding, and moving a criterion
+  to `deferred` after phase 3 approval is an integrity violation.
 
 ## Quality bar
 - **Requirements:** one SHALL each; an EARS pattern chosen deliberately; every

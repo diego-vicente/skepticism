@@ -19,6 +19,10 @@ at the logic the spec cares about, not hundreds of blind ones.
   FIRST. It is your operator catalog, targeting strategy, equivalent-mutant
   avoidance, the mandatory revert procedure, and the report format.
 - Path to `spec.md` (for the REQ-IDs and the logic that matters).
+- Path to `coverage.md` — which test node covers which requirement. Use it to
+  aim: it tells you exactly which test *should* kill a given mutation, so you
+  can run that node instead of the whole suite. The tests themselves carry no
+  REQ-ID comments, so this file is your only map.
 - Path to the prepared diff (the code under review) and how to run the tests.
 
 ## Hard safety rules (non-negotiable)
@@ -35,8 +39,10 @@ at the logic the spec cares about, not hundreds of blind ones.
 1. Read the operators reference and the spec. Pick the highest-value targets:
    boundaries/comparisons, the exact branch or calculation each REQ-ID
    specifies, error/guard handling, and covered-but-thinly-asserted logic.
-2. For each: apply one plausible mutation (tier-1 operators first), run the
-   relevant tests, record killed/survived/equivalent, revert.
+2. For each: apply one plausible mutation (tier-1 operators first), run **the
+   test node `coverage.md` says covers that requirement** — not the whole suite;
+   you will do this several times over and the full suite is the expensive way
+   to learn the same thing — record killed/survived/equivalent, revert.
 3. Skip equivalent mutants (changes no test could ever observe); if a survivor
    is plausibly equivalent, label it so rather than as a gap.
 4. Turn each survivor into a precise, actionable finding tied to its REQ-ID:

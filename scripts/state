@@ -2,18 +2,46 @@
 # state — minimal helper for the skepticism run directory.
 # Deliberately small: the controller skill edits state.md with its own file
 # tools. This script only creates the run directory and a template on first use,
-# and resolves paths. (YAGNI — we are not building a state engine in bash.)
+# keeps the framework out of the remote, and resolves paths. (YAGNI — we are not
+# building a state engine in bash.)
 #
 # Usage:
 #   state init <slug> ["one-line feature summary"]   create run dir + template
 #   state path <slug>                                print the state.md path
 #   state dir  <slug>                                print the run directory
+#   state protect                                    exclude .skepticism/ locally
 set -euo pipefail
 
-root="docs/skepticism"
-cmd="${1:?usage: state init|path|dir <slug>}"
+ROOT=".skepticism"
+RUNS="${ROOT}/runs"
+EXCLUDE_LINE="/${ROOT}/"
+
+# Iron Rule 6 (leave no trace): run artifacts must never reach the remote. The
+# exclusion lives in .git/info/exclude — local to this clone, never pushed —
+# because writing `.skepticism/` into .gitignore would itself commit a reference
+# to the framework. Idempotent; a no-op outside a git repo.
+protect() {
+  local gitdir exclude
+  gitdir="$(git rev-parse --git-common-dir 2>/dev/null)" || return 0
+  [[ -n "$gitdir" ]] || return 0
+  exclude="${gitdir}/info/exclude"
+  if [[ -f "$exclude" ]] && grep -qxF "$EXCLUDE_LINE" "$exclude"; then
+    return 0
+  fi
+  mkdir -p "${gitdir}/info"
+  printf '%s\n' "$EXCLUDE_LINE" >> "$exclude"
+  echo "protect: '${EXCLUDE_LINE}' excluded via ${exclude} (local to this clone, never pushed)" >&2
+}
+
+cmd="${1:?usage: state init|path|dir|protect [<slug>]}"
+
+if [[ "$cmd" == "protect" ]]; then
+  protect
+  exit 0
+fi
+
 slug="${2:?missing <slug>}"
-dir="${root}/${slug}"
+dir="${RUNS}/${slug}"
 file="${dir}/state.md"
 
 case "$cmd" in
@@ -21,6 +49,7 @@ case "$cmd" in
   path) echo "$file" ;;
   init)
     summary="${3:-<one-line summary>}"
+    protect
     mkdir -p "$dir"
     if [[ -f "$file" ]]; then
       echo "$file"   # already exists; resume
@@ -32,11 +61,16 @@ case "$cmd" in
 - feature: ${summary}
 - tier: standard
 - phase: spec
+- checkpoints: gates
+- commits: ask
+- plugin_root: (resolved once by the controller in phase 0)
+- base_ref: (commit this run started from)
+- last_reviewed_ref: (head of the last diff the panel reviewed)
 - updated: (set by controller)
 
 ## Phase log
 - [ ] spec          → spec.md
-- [ ] red-tests     → tests-report.md
+- [ ] red-tests     → tests-report.md, coverage.md
 - [ ] test-review   → test-review.md
 - [ ] implement     →
 - [ ] det-gate      → det-gate.log

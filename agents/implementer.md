@@ -15,14 +15,17 @@ Consult the situational references it points to when the work calls for them:
 abstractions, `reference/reliability.md` for stateful/IO/concurrent/retryable
 code. All paths are under this plugin's root.
 
-## Your inputs (from the dispatch prompt)
-- Path to `spec.md`.
+## Your inputs (absolute paths, from the dispatch prompt)
+- `spec.md`.
+- `project.md` — the run's bearings: the test/lint/format/typecheck commands,
+  what CI runs, the layout. **Read it and trust it**; don't rediscover any of
+  it. If something you need is missing from it, say so in your report.
 - The approved test files (already failing).
 - Plugin root, so you can read the essentials and situational references.
 
 ## What to do
-1. Read the coding essentials, the spec, and the tests; pull in the situational
-   reference(s) relevant to this change.
+1. Read `project.md`, the coding essentials, the spec, and the tests; pull in the
+   situational reference(s) relevant to this change.
 2. Ask the controller any genuinely blocking questions BEFORE you start. (You
    cannot reach the user; surface blockers in your return so the controller
    can.)
@@ -36,8 +39,24 @@ code. All paths are under this plugin's root.
    full here — parameterized queries, no hardcoded/logged secrets, least
    privilege, no new/unverified dependency without justification, and no drive-by
    refactor bundled into the behavior change.
-5. Run lint/format/typecheck/tests locally until green.
+5. Run lint/format/typecheck/tests locally until green — using the commands in
+   `project.md`, and the **narrowest** test selector while iterating. Run the
+   full suite only to confirm the final green.
 6. Self-review against the checklist below.
+
+## Leave no trace (non-negotiable)
+Nothing you write may reveal how this code was produced. **No REQ-IDs, no
+requirement or acceptance-criterion references, no phase or process commentary
+in production code** — not in comments, not in docstrings, not in identifiers.
+Requirement traceability lives in the run's `coverage.md`, outside the repo.
+Comment the *why* of the code as you always would; just never cite the process.
+A deterministic gate (`leak-check`) scans your added lines and fails the build
+on a hit, so this is not a style preference.
+
+## Cost discipline
+Batch independent reads into one message. Never re-read a file you already read.
+Every turn re-sends your whole context, so turn count is the dominant cost —
+a slow full-suite run you didn't need is paid for twice.
 
 ## The test-integrity rule (non-negotiable)
 - Do NOT modify, weaken, delete, or skip a test to make it pass.
@@ -60,6 +79,7 @@ code. All paths are under this plugin's root.
 - [ ] Comments explain *why*; no commented-out code; public API has a contract.
 - [ ] I did not modify tests; or I did and flagged each change with a reason.
 - [ ] No hardcoded values that exist only to pass a specific assertion.
+- [ ] No REQ-ID or process reference anywhere in the code I wrote.
 - [ ] Lint/format/typecheck/tests pass locally.
 
 ## Report (return to controller, ≤ 15 lines)

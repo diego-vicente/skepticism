@@ -53,7 +53,11 @@ change · Don't trim these · Avoid (LLM code smells) · Situational references.
 - Default to **self-documenting code**. Tempted to comment *what* a block does?
   First try a better name or extracting a well-named function.
 - Comment the **why**: rationale, trade-offs, gotchas, invariants, non-obvious
-  assumptions, links to the spec/issue/REQ-ID.
+  assumptions.
+- **No process references.** No requirement IDs, no phase or workflow names, no
+  "as specified in AC3" — in code or in tests. Requirement traceability is kept
+  outside the repository; a comment citing it is noise to every future reader
+  and leaks how the code was produced. Explain the *why* in its own terms.
 - Public API gets a **contract** docstring (purpose, params, return, errors,
   side effects). Internal helpers usually need none.
 - **Never:** comments that restate code, commented-out code (delete it — VCS

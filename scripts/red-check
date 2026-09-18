@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# red-check — confirm the test suite is genuinely RED before implementation.
+# red-check — confirm the test suite is genuinely RED before implementation,
+# and that the new tests actually live inside the project's own suite.
 #
 # Phase 2's discipline is "failing tests first." This makes it a deterministic
 # gate instead of taking the test-author's word: it RUNS the suite and requires
@@ -10,21 +11,65 @@
 # kind of red) and ERRORS (import/collection/syntax — the wrong kind, the test
 # is broken, not the feature missing), best-effort per stack.
 #
-# Auto-detects the stack. Override with an executable `.skepticism/red-check.sh`.
+# Given test paths, it first asserts the project's OWN default test run collects
+# them. Writing tests into a fresh file beside the suite is a real and common
+# failure: they pass review, then never run in CI. Note the check deliberately
+# runs collection with NO path argument — pointing the runner straight at a file
+# would collect it even when the project's configuration never would.
+#
+# Auto-detects the stack. Override with an executable `.skepticism/red-check.sh`,
+# which receives the same test paths as arguments — an override that ignores them
+# opts out of the collection check, so honour them if the project has a way to.
+#
+# Usage: red-check [test-path...]        (repo-relative paths)
 #
 # Exit codes:
-#   0  valid RED  — suite fails due to test failures (proceed)
-#   1  NOT RED    — suite passes (tests don't test the missing behavior)
-#   2  BROKEN RED — suite errors (import/collection/syntax) — fix the tests
-#   3  unknown    — could not detect a runner
+#   0  valid RED     — suite fails due to test failures (proceed)
+#   1  NOT RED       — suite passes (tests don't test the missing behavior)
+#   2  BROKEN RED    — suite errors (import/collection/syntax) — fix the tests
+#   3  unknown       — could not detect a runner
+#   4  NOT COLLECTED — the given tests are outside the project's own suite
 set -uo pipefail
 
 if [[ -x ".skepticism/red-check.sh" ]]; then
-  exec ./.skepticism/red-check.sh
+  exec ./.skepticism/red-check.sh "$@"
 fi
 
 have() { command -v "$1" >/dev/null 2>&1; }
 ERROR_RE='(ImportError|ModuleNotFoundError|SyntaxError|collection error|errors during collection|Cannot find module|cannot find name|no such file|compilation (error|failed)|error\[E[0-9]|undefined reference)'
+
+# Repo-relative test paths to verify, normalized (./x → x).
+NEW_TESTS=()
+for arg in "$@"; do NEW_TESTS+=("${arg#./}"); done
+
+not_collected() { # <runner> <listing> <missing...>
+  local runner="$1" listing="$2"; shift 2
+  echo
+  echo "red-check: NOT COLLECTED — the project's own ${runner} run does not pick up:"
+  printf '  ✗ %s\n' "$@"
+  echo
+  echo "These tests are outside the suite the project actually runs, so CI would"
+  echo "never execute them. Move them into the existing layout (project.md records"
+  echo "the conventions) rather than adding a file beside the suite."
+  echo
+  echo "What ${runner} does collect:"
+  printf '%s\n' "$listing" | head -n 30
+  exit 4
+}
+
+# Assert every path in NEW_TESTS appears in the runner's own collection listing.
+assert_collected() { # <runner> <listing>
+  local runner="$1" listing="$2" p
+  local missing=()
+  for p in "${NEW_TESTS[@]}"; do
+    printf '%s\n' "$listing" | grep -qF "$p" || missing+=("$p")
+  done
+  if [[ "${#missing[@]}" -gt 0 ]]; then
+    not_collected "$runner" "$listing" "${missing[@]}"
+  fi
+  echo "    ✓ collection: all ${#NEW_TESTS[@]} new test path(s) are in the project's ${runner} suite"
+  echo
+}
 
 # Run a test command; classify the result.
 classify() { # <label> <cmd...>
@@ -54,17 +99,38 @@ if [[ -f package.json ]]; then
   elif have yarn && [[ -f yarn.lock ]]; then PM=yarn
   elif have npm; then PM=npm; fi
   if [[ -n "${PM:-}" ]] && node -e "process.exit(require('./package.json').scripts?.test?0:1)" 2>/dev/null; then
+    if [[ "${#NEW_TESTS[@]}" -gt 0 ]]; then
+      echo "──► collection: $PM test -- --listTests"
+      if listing="$("$PM" test -- --listTests 2>&1)" ; then
+        assert_collected "$PM test" "$listing"
+      else
+        echo "    ~ inconclusive: this runner does not support --listTests."
+        echo "      Verify by hand that the new tests are in the project's testMatch."
+        echo
+      fi
+    fi
     classify "test" "$PM" test
   fi
 fi
 # --- Python -----------------------------------------------------------------
 if have pytest && { [[ -f pyproject.toml || -f setup.cfg ]] || ls -1 test_*.py *_test.py tests/ >/dev/null 2>&1; }; then
+  if [[ "${#NEW_TESTS[@]}" -gt 0 ]]; then
+    echo "──► collection: pytest --collect-only -q  (project default, no path given)"
+    listing="$(pytest --collect-only -q 2>&1)"
+    assert_collected "pytest" "$listing"
+  fi
   classify "pytest" pytest -q
 fi
 # --- Rust -------------------------------------------------------------------
-if [[ -f Cargo.toml ]] && have cargo; then classify "cargo test" cargo test; fi
+if [[ -f Cargo.toml ]] && have cargo; then
+  [[ "${#NEW_TESTS[@]}" -gt 0 ]] && echo "    ✓ collection: cargo collects every #[test] in the crate by construction"
+  classify "cargo test" cargo test
+fi
 # --- Go ---------------------------------------------------------------------
-if [[ -f go.mod ]] && have go; then classify "go test" go test ./...; fi
+if [[ -f go.mod ]] && have go; then
+  [[ "${#NEW_TESTS[@]}" -gt 0 ]] && echo "    ✓ collection: go test ./... collects every _test.go in the module by construction"
+  classify "go test" go test ./...
+fi
 
 echo "red-check: could not detect a test runner. Add .skepticism/red-check.sh."
 exit 3

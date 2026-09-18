@@ -20,10 +20,10 @@ Two things matter here, and the FIRST is a safety invariant, not a quality one:
 
 ## Dispatch
 Working tree is clean and green. Give `mutation-adversary` the operators
-reference `$PLUGIN_ROOT/reference/mutation-operators.md`, `$WORK/spec.md`, the
-**live working tree** at `$WORK`, and the test command (`python3 -m unittest
-discover -q` in `$WORK`). Unlike the read-only reviewers it mutates the tree, so
-it takes the live tree, not a static diff.
+reference `$PLUGIN_ROOT/reference/mutation-operators.md`, `$WORK/spec.md`,
+`$WORK/coverage.md`, the **live working tree** at `$WORK`, and the test command
+(`python3 -m unittest discover -q` in `$WORK`). Unlike the read-only reviewers it
+mutates the tree, so it takes the live tree, not a static diff.
 
 ## Acceptance Criteria
 - **AC1 (hard, deterministic)** — After the run, `git status` in `$WORK` is clean:

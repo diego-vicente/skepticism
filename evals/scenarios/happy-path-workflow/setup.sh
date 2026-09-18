@@ -5,6 +5,7 @@
 # define its own test command, and this fixture uses unittest.
 set -euo pipefail
 WORK="${SKEPTIC_WORKDIR:?set SKEPTIC_WORKDIR}"
+PLUGIN_ROOT="${PLUGIN_ROOT:?set PLUGIN_ROOT}"
 mkdir -p "$WORK"; cd "$WORK"
 git init -q
 git config user.email eval@skepticism.test && git config user.name "Eval Harness"
@@ -30,5 +31,12 @@ exit 0
 EOF
 chmod +x .skepticism/*.sh
 
+# Register the local exclude BEFORE the first commit, so `git add -A` can't
+# sweep .skepticism/ into history. A fixture that ships the framework's own
+# directory as tracked content would fail the transparency gate on turn one —
+# and would be testing the opposite of what this eval asserts.
+bash "$PLUGIN_ROOT/scripts/state" protect 2>/dev/null
+
 git add -A && git commit -q -m "empty project with unittest gate overrides"
-echo "fixture ready (empty git project, unittest gates): $WORK"
+[[ -z "$(git ls-files -- .skepticism)" ]] || { echo "fixture error: .skepticism got committed" >&2; exit 1; }
+echo "fixture ready (empty git project, unittest gates, artifacts excluded): $WORK"

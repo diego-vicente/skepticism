@@ -39,7 +39,9 @@ Pick the spots where a bug would be both *plausible* and *important*:
 1. **Boundaries first** — every threshold, comparison, loop bound, array index.
 2. **The logic a REQ-ID cares about** — read the spec; mutate the exact branch or
    calculation a requirement specifies. Each mutation should map to a REQ-ID so a
-   survivor is an actionable, traceable finding.
+   survivor is an actionable, traceable finding. `coverage.md` names the test
+   node that claims to cover each requirement — that is the test that ought to
+   kill your mutation, and the one to run.
 3. **Error/edge handling** — guards, validations, the `IF/THEN` paths.
 4. **Covered-but-thinly-asserted code** — logic the tests execute but may not
    actually check the result of.
@@ -64,7 +66,9 @@ The code is green and the working tree is clean before you start. For each
 mutation:
 1. Confirm `git status` is clean. Abort and report if it is not.
 2. Apply ONE mutation with a minimal edit.
-3. Run the relevant tests (the suite, or the targeted tests for that REQ-ID).
+3. Run the **narrowest** relevant tests — the node `coverage.md` maps to that
+   REQ-ID, not the whole suite. You repeat this per mutation, so a full-suite
+   run is the expensive way to learn the same thing.
 4. Record: **killed** (a test failed — good) or **survived** (all passed — gap).
 5. **Revert immediately**: `git checkout -- <file>` (or equivalent). Re-confirm
    the tree is clean before the next mutation.

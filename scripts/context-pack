@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+# context-pack — write the run's bearings file ONCE, so that no subagent has to
+# rediscover the project.
+#
+# Without this, test-author, implementer and mutation-adversary each re-derive
+# the same facts (where do tests live? what runs them? what does CI actually
+# call?) from scratch, in separate contexts, paying for it every time. Worse,
+# when the test-author guesses wrong, tests land in a new file beside the suite
+# and CI never runs them.
+#
+# Everything written here is evidence-based: each command is reported with the
+# file it came from, and a guess is labelled as one.
+#
+# Usage: context-pack <slug>     (run from the project repo root)
+# Env:   SKEPTIC_PLUGIN_ROOT     recorded so subagents never search for refs
+#
+# Prints the path to the generated file on stdout.
+set -euo pipefail
+
+ROOT=".skepticism"
+MAX_LISTED_TEST_FILES=20
+MAX_CI_COMMANDS=12
+CI_COMMAND_RE='(pytest|npm (run |test)|yarn |pnpm |go test|cargo (test|clippy|fmt)|ruff|mypy|eslint|prettier|tox|nox|make [a-z:-]+)'
+TEST_PATH_RE='(^|/)(tests?|__tests__|spec)/|(^|/)test_[^/]+$|(_test|[.]test|[.]spec)[.][a-z]+$'
+
+slug="${1:?usage: context-pack <slug>}"
+dir="${ROOT}/runs/${slug}"
+out="${dir}/project.md"
+mkdir -p "$dir"
+
+have() { command -v "$1" >/dev/null 2>&1; }
+exists() { [[ -e "$1" ]] && echo "yes" || echo "no"; }
+
+# package.json scripts as "name<TAB>command" lines.
+js_scripts() {
+  [[ -f package.json ]] || return 0
+  python3 -c '
+import json, sys
+try:
+    scripts = json.load(open("package.json")).get("scripts") or {}
+except Exception:
+    sys.exit(0)
+for name, cmd in scripts.items():
+    print(f"{name}\t{cmd}")
+' 2>/dev/null || true
+}
+
+# Report one command slot with the evidence behind it.
+reported_test=0
+report_command() { # <slot> <command> <source>
+  [[ "$1" == "test" ]] && reported_test=1
+  printf -- '- **%s**: `%s`  \n  _source: %s_\n' "$1" "$2" "$3"
+}
+
+all_files() {
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    git ls-files
+  else
+    find . -type f -not -path './.git/*' | sed 's|^\./||'
+  fi
+}
+
+ci_files() { ls .github/workflows/*.yml .github/workflows/*.yaml .gitlab-ci.yml 2>/dev/null || true; }
+
+# CI is the most reliable evidence of what the project *actually* runs — more so
+# than what happens to be installed on this machine — so extract it up front and
+# use it both as its own section and as the fallback for the command slots.
+ci="$(ci_files)"
+ci_cmds=""
+if [[ -n "$ci" ]]; then
+  ci_cmds="$(grep -hE "$CI_COMMAND_RE" $ci 2>/dev/null \
+    | sed 's/^[[:space:]]*-\{0,1\}[[:space:]]*//;s/^run:[[:space:]]*//' \
+    | sort -u | head -n "$MAX_CI_COMMANDS")"
+fi
+
+{
+  echo "# Project bearings — $(basename "$PWD")"
+  echo
+  echo "Written once at the start of this run. **Read this instead of exploring the"
+  echo "repo.** If something you need is missing, say so in your report rather than"
+  echo "going and finding it — rediscovery in six separate contexts is what this"
+  echo "file exists to prevent."
+  echo
+
+  # --- Paths ----------------------------------------------------------------
+  echo "## Paths"
+  echo "- repo root: \`$PWD\`"
+  echo "- plugin root: \`${SKEPTIC_PLUGIN_ROOT:-(not passed — controller should set SKEPTIC_PLUGIN_ROOT)}\`"
+  echo "- run artifacts: \`${dir}/\` (git-excluded locally; nothing here reaches the remote)"
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "- branch: \`$(git rev-parse --abbrev-ref HEAD 2>/dev/null)\`"
+    echo "- head: \`$(git rev-parse --short HEAD 2>/dev/null || echo '(no commits)')\`"
+  fi
+  echo
+
+  # --- Stack ----------------------------------------------------------------
+  echo "## Stack"
+  for marker in package.json pyproject.toml setup.cfg tox.ini Cargo.toml go.mod Makefile justfile; do
+    [[ -f "$marker" ]] && echo "- \`${marker}\`"
+  done
+  echo
+
+  # --- Commands -------------------------------------------------------------
+  echo "## Commands"
+  echo
+  if [[ -x "${ROOT}/red-check.sh" || -x "${ROOT}/det-gate.sh" ]]; then
+    echo "> This project defines its own gate overrides — they win over anything below."
+    echo
+  fi
+  scripts="$(js_scripts)"
+  if [[ -n "$scripts" ]]; then
+    while IFS=$'\t' read -r name cmd; do
+      case "$name" in
+        test|lint|typecheck|format:check|format|fmt)
+          report_command "$name" "npm run ${name}" "package.json scripts.${name} → ${cmd}" ;;
+      esac
+    done <<< "$scripts"
+  fi
+  if [[ -f pyproject.toml || -f setup.cfg ]] && have pytest; then
+    report_command "test" "pytest" "pytest available; $( [[ -f pyproject.toml ]] && echo pyproject.toml || echo setup.cfg ) present"
+  fi
+  have ruff && [[ -f pyproject.toml || -f setup.cfg ]] && report_command "lint" "ruff check ." "ruff on PATH"
+  have mypy && [[ -f pyproject.toml || -f setup.cfg ]] && report_command "typecheck" "mypy ." "mypy on PATH"
+  [[ -f Cargo.toml ]] && report_command "test" "cargo test" "Cargo.toml"
+  [[ -f go.mod ]] && report_command "test" "go test ./..." "go.mod"
+  if [[ -f Makefile ]]; then
+    targets="$(grep -Eo '^(test|lint|fmt|format|check|typecheck)[a-z-]*:' Makefile 2>/dev/null | tr -d ':' | sort -u)"
+    for t in $targets; do report_command "$t" "make ${t}" "Makefile target"; done
+  fi
+  # A runner missing from PATH (a venv, a container) must not read as "no tests".
+  if [[ "$reported_test" -eq 0 ]]; then
+    guess="$(printf '%s\n' "$ci_cmds" | grep -m1 -E '(pytest|npm (run )?test|yarn test|pnpm test|go test|cargo test|tox|nox)' || true)"
+    if [[ -n "$guess" ]]; then
+      report_command "test" "$guess" "**guess** — from CI; no runner found on PATH here"
+    else
+      echo "- **test**: _not determined_ — no runner on PATH and no CI command matched."
+      echo "  Ask the controller for the test command rather than inventing one."
+    fi
+  fi
+  echo
+  echo "**Iterate with the narrowest selector** (one file, one test node); run the"
+  echo "full command only to confirm the final green. Test-suite runtime is billed"
+  echo "to every turn that waits on it."
+  echo
+
+  # --- CI -------------------------------------------------------------------
+  echo "## What CI actually runs"
+  if [[ -n "$ci" ]]; then
+    echo "$ci" | sed 's/^/- config: `/;s/$/`/'
+    echo
+    if [[ -n "$ci_cmds" ]]; then
+      echo '```'
+      printf '%s\n' "$ci_cmds"
+      echo '```'
+      echo
+      echo "A test that CI does not run does not exist. The new tests must be picked"
+      echo "up by the commands above."
+    fi
+  else
+    echo "- none found (no .github/workflows or .gitlab-ci.yml)"
+  fi
+  echo
+
+  # --- Test layout ----------------------------------------------------------
+  echo "## Test layout and conventions"
+  tests="$(all_files | grep -Ei "$TEST_PATH_RE" || true)"
+  if [[ -z "$tests" ]]; then
+    echo "- **no existing tests found** — you are establishing the convention."
+    echo "  Say so explicitly in your report so the user can confirm the layout."
+  else
+    total="$(printf '%s\n' "$tests" | wc -l | tr -d '[:space:]')"
+    echo "- ${total} existing test file(s)"
+    echo "- roots: $(printf '%s\n' "$tests" | sed 's|/[^/]*$||' | sort -u | head -n 10 | tr '\n' ' ')"
+    echo "- naming:"
+    for pattern in 'test_[^/]*\.py$' '[^/]*_test\.py$' '[^/]*_test\.go$' '[^/]*\.test\.[jt]sx?$' '[^/]*\.spec\.[jt]sx?$' '[^/]*\.rs$'; do
+      n="$(printf '%s\n' "$tests" | grep -Ec "$pattern" || true)"
+      [[ "$n" -gt 0 ]] && echo "  - \`${pattern}\` → ${n}"
+    done
+    echo
+    echo "Existing files (first ${MAX_LISTED_TEST_FILES}) — **put new tests in these, or"
+    echo "alongside them following the same naming**, never in a new file outside the suite:"
+    echo '```'
+    printf '%s\n' "$tests" | head -n "$MAX_LISTED_TEST_FILES"
+    echo '```'
+  fi
+  echo
+
+  # --- Overrides ------------------------------------------------------------
+  echo "## Gate overrides"
+  echo "- \`${ROOT}/det-gate.sh\`: $(exists "${ROOT}/det-gate.sh")"
+  echo "- \`${ROOT}/red-check.sh\`: $(exists "${ROOT}/red-check.sh")"
+  echo "- \`${ROOT}/leak-allow\`: $(exists "${ROOT}/leak-allow")"
+} > "$out"
+
+echo "$out"

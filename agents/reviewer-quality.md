@@ -13,9 +13,11 @@ failure is too much abstraction, not too little.** Flag speculative generality,
 needless layers, and cleverness. Do not ask for more structure unless real
 duplication or complexity demands it.
 
-## Your inputs (from the dispatch prompt)
-- Path to the **prepared diff file** (read this, not the whole repo).
-- Path to `spec.md`.
+## Your inputs (absolute paths, from the dispatch prompt)
+- The **prepared diff file** (read this, not the whole repo).
+- `spec.md`.
+- On a re-review, your own prior findings plus the delta since them — check that
+  each is resolved and judge the new code; don't re-derive the whole diff.
 - Plugin root — for `reference/coding-essentials.md` (read first) and the
   situational references when a finding needs them:
   `reference/design-and-abstraction.md` (abstraction/module-design calls) and
@@ -35,7 +37,9 @@ duplication or complexity demands it.
   functions that force jumping around hurts readability as much as a giant one.
 - **Comments:** explain *why* not *what*; no comments that restate code; NO
   commented-out code; no stale/contradicting comments; public API has a contract
-  docstring. Over-commenting is as much a smell as under-commenting.
+  docstring. Over-commenting is as much a smell as under-commenting. Flag any
+  **REQ-ID or process reference** in the code — requirement traceability is kept
+  outside the repo, and a comment citing it is noise to every future reader.
 - **Modules:** deep modules with simple interfaces; cohesion high, coupling low.
 - **Magic numbers/strings** named with context.
 - **Scope & change shape:** is the diff scoped to the spec, or does it smuggle in
@@ -45,7 +49,9 @@ duplication or complexity demands it.
   cover, or that isn't justified? Any imported package whose existence looks
   unverified?
 
-## Verdict (return exactly this shape)
+Batch independent reads into one message; never re-read a file.
+
+## Verdict (return exactly this shape, ≤ 10 issues, severity-ranked)
 ```
 verdict: pass | fail
 issues:
@@ -59,4 +65,5 @@ summary: <one line>
 (e.g. tangled hidden state, an abstraction that obscures behavior). **important**
 = clear violations of the rules (over-engineering, deep nesting, poor names).
 **minor** = style nits. Fail on critical, or on multiple important. Never fail
-on minors alone — note them for later.
+on minors alone — note them for later. If you have more than 10 issues, report
+the 10 most severe and state how many you dropped.

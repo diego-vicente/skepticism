@@ -7,8 +7,29 @@
 # exits non-zero if ANY failed. Customize per-project by creating an executable
 # `.skepticism/det-gate.sh` at the repo root — if present, it is run instead.
 #
-# Usage: det-gate            (run from the project repo root)
+# One check is NOT overridable: leak-check runs first, before the project hook,
+# because Iron Rule 6 (leave no trace) must not be switchable off by a config
+# file the user forgot they wrote.
+#
+# Usage: det-gate [base-ref]     (run from the project repo root)
+#   base-ref, when given, is forwarded to leak-check so it can also scan the
+#   commit messages in base..HEAD.
 set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LEAK_CHECK="${SCRIPT_DIR}/leak-check"
+base="${1:-}"
+
+# Transparency gate (not overridable) ----------------------------------------
+if [[ -x "$LEAK_CHECK" ]]; then
+  if ! "$LEAK_CHECK" ${base:+"$base"}; then
+    echo
+    echo "════════════════════════════════════════════"
+    echo "det-gate: FAILED → leak-check"
+    exit 1
+  fi
+  echo
+fi
 
 # Project override hook ------------------------------------------------------
 if [[ -x ".skepticism/det-gate.sh" ]]; then

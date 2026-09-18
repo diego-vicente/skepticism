@@ -10,7 +10,7 @@ second, and never a moot assertion.** The design is adapted from Anthropic's
 
 | Tier | What it proves | How | Cost / CI |
 |------|----------------|-----|-----------|
-| **0 — script tests** | The deterministic scripts (`gate-check`, `red-check`, `det-gate`, `state`, `consolidate`, `package-diff`) behave exactly as the phases depend on | `bash`+`python3` unit tests with fixtures & fake runners — no language runtimes needed | **CI-safe, fast, ~100% solid** |
+| **0 — script tests** | The deterministic scripts (`gate-check`, `red-check`, `det-gate`, `leak-check`, `context-pack`, `state`, `consolidate`, `package-diff`) behave exactly as the phases depend on | `bash`+`python3` unit tests with fixtures & fake runners — no language runtimes needed | **CI-safe, fast, ~100% solid** |
 | **1a — per-agent behavioral** | Each adversarial subagent catches the flaw it exists to catch, in isolation | Dispatch one subagent at a planted-flaw fixture; dual-witness grade | Needs API; **not CI** |
 | **1b — full-workflow** | The controller chains the phases, wires the scripts, and holds Iron Rule 1 | Drive `/skeptic:coding` headlessly; assert on the session transcript | Needs API; slow; **not CI** |
 | **2 — triggering** | Each skill fires on the right prompts and not on near-misses | Headless `claude -p`, inspect whether the skill was invoked | Needs API; **not CI** |
@@ -43,6 +43,10 @@ evals/
     checks-lib.sh            # deterministic check verbs for scenarios
     grade.md                 # the LLM-judge prompt (semantic witness)
   tier0-scripts/             # one test-*.sh per script; hermetic
+                             #   leak-check's tests weigh false positives as
+                             #   heavily as true ones — a transparency gate that
+                             #   fires on a project's own prose would block
+                             #   every run in that repo
   scenarios/<name>/
     eval.md                  # metadata + ## Acceptance Criteria (LLM-judged)
     story.md                 # (1b only) the scripted human-driver prompt

@@ -46,6 +46,30 @@ chmod +x "$WORK/ovr/.skepticism/det-gate.sh"
 out="$( cd "$WORK/ovr" && bash "$DG" 2>&1 )"; rc=$?
 assert_eq       "override exit passes through"     1 "$rc"
 assert_contains "override is what ran"             "$out" "OVERRIDE-RAN"
+assert_contains "leak-check ran before it"         "$out" "leak-check"
+
+# ── Transparency is NOT overridable: a leaking repo fails before the override ─
+# Iron Rule 6 must not be switchable off by a det-gate.sh the user forgot about,
+# so leak-check runs first and short-circuits on failure.
+LEAKY="$WORK/leaky"
+mkdir -p "$LEAKY/.skepticism/runs/feat"
+cat > "$LEAKY/.skepticism/det-gate.sh" <<'OVR'
+#!/usr/bin/env bash
+echo "OVERRIDE-RAN"; exit 0
+OVR
+chmod +x "$LEAKY/.skepticism/det-gate.sh"
+( cd "$LEAKY" \
+  && git init -q . \
+  && git config user.email eval@skepticism.test \
+  && git config user.name "Eval Harness" \
+  && printf '# state\n' > .skepticism/runs/feat/state.md \
+  && git add -A -f && git commit -q -m "leak" ) >/dev/null 2>&1
+out="$( cd "$LEAKY" && bash "$DG" 2>&1 )"; rc=$?
+assert_eq       "tracked artifacts ⇒ exit 1"       1 "$rc"
+assert_contains "verdict names leak-check"         "$out" "leak-check"
+[[ "$out" != *OVERRIDE-RAN* ]] \
+  && _pass "override is skipped when leak-check fails" \
+  || _fail "override is skipped when leak-check fails" "override ran anyway"
 
 # ── No known checks → safe exit 0 (never block a project it doesn't understand) ─
 mkdir -p "$WORK/blank"

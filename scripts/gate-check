@@ -8,17 +8,23 @@ by the model — prose alone gets rationalized away.
 
 Design principles:
 - OPT-IN: only activates when an active run exists in the project (a state.md
-  under docs/skepticism/<slug>/). With no active run it allows everything, so
+  under .skepticism/runs/<slug>/). With no active run it allows everything, so
   the plugin never interferes with normal work in other repos.
 - FAIL-OPEN: any parsing/IO error allows the edit. A buggy gate must never
   brick the user's ability to edit files.
-- Edits to tests, to the run's own docs, and to .skepticism/ config are always
-  allowed — you must be able to write the tests during the test phases.
+- Edits to tests and to the run's own artifacts are always allowed — you must
+  be able to write the tests during the test phases.
 """
 import sys, os, json, glob, re
 
 PRE_IMPL_PHASES = {"spec", "red-tests", "test-review"}
 TEST_PATH_RE = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(^|/)test_|(_test|\.test|\.spec)\.", re.I)
+
+# Everything the framework owns lives under .skepticism/. The legacy location is
+# still read so a run started before the move can finish.
+RUN_ROOT = ".skepticism"
+LEGACY_RUN_ROOT = "docs/skepticism"
+STATE_GLOBS = (f"{RUN_ROOT}/runs/*/state.md", f"{LEGACY_RUN_ROOT}/*/state.md")
 
 
 def allow():
@@ -51,7 +57,7 @@ def main():
 
     # Find active runs blocking implementation.
     blocking = []
-    for state_file in glob.glob("docs/skepticism/*/state.md"):
+    for state_file in [p for g in STATE_GLOBS for p in glob.glob(g)]:
         try:
             text = open(state_file, encoding="utf-8").read()
         except Exception:
@@ -65,12 +71,11 @@ def main():
 
     # Always-allowed targets even during the gate:
     #  - tests (you must write them now)
-    #  - the run's own docs/skepticism artifacts
-    #  - .skepticism/ project config
+    #  - the run's own artifacts and project config under .skepticism/
     rel = os.path.relpath(target_abs, os.getcwd())
     if (TEST_PATH_RE.search(rel)
-            or rel.startswith("docs/skepticism" + os.sep)
-            or rel.startswith(".skepticism" + os.sep)):
+            or rel.startswith(RUN_ROOT + os.sep)
+            or rel.startswith(LEGACY_RUN_ROOT + os.sep)):
         allow()
 
     deny(

@@ -31,10 +31,10 @@ EOF
 cat > test_grades.py <<'EOF'
 from grades import grade
 
-def test_passing():   # REQ-1
+def test_passing():
     assert grade(85) == "pass"
 
-def test_failing():   # REQ-2
+def test_failing():
     assert grade(50) == "fail"
 EOF
 git add -A && git commit -q -m "approved tests + stub"

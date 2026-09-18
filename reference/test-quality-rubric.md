@@ -30,11 +30,20 @@ here mean the whole workflow verifies nothing.
   refactors and pass on broken behavior — worst of both worlds.
 - Over-mocking: so much is mocked that no real logic is exercised.
 
-### 3. Spec fidelity (drift) — use the REQ-IDs
+### 3. Spec fidelity (drift) — verify `coverage.md`, don't trust it
 - **Every EARS requirement (REQ-ID) is covered by at least one test.** Build the
-  map yourself: REQ-ID → test(s). Tests should carry their REQ-ID in a comment;
-  if they don't, that's an important issue (traceability is part of the
-  contract). Flag any REQ-ID with no covering test as **critical**.
+  map yourself, then diff it against the author's `coverage.md`. Flag any REQ-ID
+  with no covering test and no recorded deferral as **critical**.
+- The map's node IDs are **runnable** (`path::test_name`) — resolve them. A node
+  ID that points at a test which doesn't actually exercise that requirement is a
+  **false coverage claim**, and that is critical: it is worse than an admitted
+  gap, because it stops anyone from looking again.
+- Tests carry **no REQ-ID comments** by design; `coverage.md` is the only map. A
+  REQ-ID found inside a test file is an issue in its own right — flag it.
+- **Deferrals.** A criterion may be deferred only by a user decision recorded in
+  `coverage.md`'s deferred list. An accepted deferral is not a failure — note it
+  and move on. An undeclared gap is critical. A deferral whose justification
+  doesn't survive scrutiny (claimed expensive, actually cheap) is **important**.
 - **Every acceptance criterion (AC) maps to a test**, and each test's assertions
   actually exercise the SHALL clause of the REQ-ID it claims to cover.
 - **No test contradicts the spec** (asserts behavior the spec doesn't state, or

@@ -23,7 +23,16 @@ cd "$WORK"
 
 # Set the single active run's phase (or clear it with `clear`).
 set_phase() {
-  if [[ "$1" == "clear" ]]; then rm -rf docs/skepticism; return; fi
+  rm -rf .skepticism docs/skepticism
+  [[ "$1" == "clear" ]] && return
+  mkdir -p .skepticism/runs/feat
+  printf '# Skepticism run: feat\n\n- phase: %s\n' "$1" > .skepticism/runs/feat/state.md
+}
+
+# Same, but under the pre-move layout — a run started before the directory
+# unification must still be honoured until it finishes.
+set_legacy_phase() {
+  rm -rf .skepticism docs/skepticism
   mkdir -p docs/skepticism/feat
   printf '# Skepticism run: feat\n\n- phase: %s\n' "$1" > docs/skepticism/feat/state.md
 }
@@ -50,7 +59,8 @@ expect_allow "test file (.test. infix) allowed"    test-review src/app.test.ts
 expect_allow "test file (.spec. infix) allowed"    test-review src/app.spec.js
 expect_allow "test file (__tests__/) allowed"      test-review src/__tests__/x.js
 expect_allow "test file (spec/ dir) allowed"       test-review spec/core_behaviour.rb
-expect_allow "run's own spec.md allowed"           test-review docs/skepticism/feat/spec.md
+expect_allow "run's own spec.md allowed"           test-review .skepticism/runs/feat/spec.md
+expect_allow "run's coverage.md allowed"           test-review .skepticism/runs/feat/coverage.md
 expect_allow ".skepticism config allowed"          test-review .skepticism/red-check.sh
 
 # ── Adversarial: 'test'/'spec' as a substring is NOT a test file → BLOCK ─────
@@ -65,6 +75,13 @@ expect_allow "report phase allows source edit"     report      src/app.py
 
 # ── No active run anywhere → never interfere with normal work ────────────────
 expect_allow "no active run allows anything"       clear       src/app.py
+
+# ── A run left under the pre-move layout is still honoured ───────────────────
+set_legacy_phase test-review
+out="$(run_gate src/app.py)"
+assert_contains "legacy run dir still blocks source"  "$out" "deny"
+out="$(run_gate docs/skepticism/feat/spec.md)"
+assert_empty    "legacy run's own artifacts allowed"  "$out"
 
 # ── Fail-open: a buggy/absent payload must NEVER block editing ───────────────
 set_phase test-review

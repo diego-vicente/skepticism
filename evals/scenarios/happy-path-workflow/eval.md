@@ -9,14 +9,15 @@ driver: story.md
 
 The one end-to-end proof that the controller actually drives the state machine —
 authors a spec, writes failing tests, dispatches the phase-6 panel, and ends
-with green code and a clean tree. Deliberately a trivial pure function so the
-run stays short; the value is in the *plumbing*, not the feature.
+with green code, a clean tree, and no sign it was ever here. Deliberately a
+trivial pure function so the run stays short; the value is in the *plumbing*,
+not the feature.
 
 Expensive and slow (several minutes). Not a CI test — run it manually or on an
 eval host, ideally 2–3 times (LLM runs vary).
 
 ## Acceptance Criteria
-- **AC1 (deterministic)** — `docs/skepticism/*/spec.md` exists and contains at
+- **AC1 (deterministic)** — `.skepticism/runs/*/spec.md` exists and contains at
   least one `REQ-` id.
 - **AC2 (deterministic)** — a test file for `slugify` exists and the suite passes
   against the final implementation.
@@ -25,6 +26,11 @@ eval host, ideally 2–3 times (LLM runs vary).
 - **AC4 (deterministic)** — the run's `state.md` reached `phase: report` (or
   `done`). (No tree-clean assertion here — a build workflow is meant to add
   `slug.py` and its tests; new files are the expected output, not a leftover.)
-- **AC5** — phases ran **in order** (spec approved before tests; tests reviewed
+- **AC5 (deterministic)** — the framework left **no trace**: `leak-check` passes
+  in `$WORK` (no REQ-IDs or process commentary in `slug.py` or its tests, no
+  framework references in commit messages) and no run artifact is tracked by
+  git. This is the end-to-end witness for Iron Rule 6 — the unit test covers the
+  script, but only a real run can produce the leak an agent writes by hand.
+- **AC6** — phases ran **in order** (spec approved before tests; tests reviewed
   before implementation; implementation reviewed before report) and the reviewers
   passed against genuinely real code (not tests bent to pass).

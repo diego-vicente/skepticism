@@ -26,6 +26,16 @@ trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/bin"
 cat > "$WORK/bin/pytest" <<'FAKE'
 #!/usr/bin/env bash
+# --collect-only reports what the project's own configuration collects; that is
+# deliberately NOT the same as "this path exists".
+for a in "$@"; do
+  if [[ "$a" == "--collect-only" ]]; then
+    echo "tests/test_login.py::test_issues_token"
+    echo "tests/test_login.py::test_rejects_bad_password"
+    echo "2 tests collected"
+    exit 0
+  fi
+done
 case "${FAKE_PYTEST_MODE:-}" in
   pass)  echo "2 passed in 0.01s"; exit 0 ;;
   fail)  echo "E       assert 1 == 2"; echo "1 failed in 0.01s"; exit 1 ;;
@@ -47,6 +57,26 @@ FAKE_PYTEST_MODE=fail  assert_eq "assertion failure → valid RED (0)"  0 "$(FAK
 FAKE_PYTEST_MODE=pass  assert_eq "suite passes → NOT RED (1)"         1 "$(FAKE_PYTEST_MODE=pass  rc "$WORK/proj")"
 FAKE_PYTEST_MODE=error assert_eq "import error → BROKEN RED (2)"      2 "$(FAKE_PYTEST_MODE=error rc "$WORK/proj")"
 assert_eq "no runner detected → unknown (3)"                         3 "$(rc "$WORK/empty")"
+
+# ── Collection gate: tests written outside the project's own suite ───────────
+# The failure this catches is quiet and expensive: the tests exist, they look
+# red, they pass review — and CI never runs them because the project's config
+# doesn't collect that path. Note the check must NOT just run the runner at the
+# path (which would collect anything); it compares against the default listing.
+rc_with() { ( cd "$WORK/proj" && bash "$RC" "$@" >/dev/null 2>&1 ); echo $?; }
+
+assert_eq "collected test path → proceeds to RED (0)" \
+  0 "$(FAKE_PYTEST_MODE=fail rc_with tests/test_login.py)"
+assert_eq "leading ./ is normalized, still collected" \
+  0 "$(FAKE_PYTEST_MODE=fail rc_with ./tests/test_login.py)"
+assert_eq "uncollected test path → NOT COLLECTED (4)" \
+  4 "$(FAKE_PYTEST_MODE=fail rc_with scratch/test_login.py)"
+assert_eq "one bad path among good ones still fails" \
+  4 "$(FAKE_PYTEST_MODE=fail rc_with tests/test_login.py scratch/test_extra.py)"
+
+out="$( cd "$WORK/proj" && FAKE_PYTEST_MODE=fail bash "$RC" scratch/test_login.py 2>&1 )"
+assert_contains "names the offending path"  "$out" "scratch/test_login.py"
+assert_contains "shows what IS collected"   "$out" "tests/test_login.py::test_issues_token"
 
 # The project override short-circuits detection and its exit code passes through.
 mkdir -p "$WORK/proj/.skepticism"

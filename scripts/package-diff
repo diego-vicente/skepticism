@@ -3,19 +3,44 @@
 # so each reviewer subagent reads a prepared artifact instead of re-exploring
 # the repo (the main token-saving lever in phase 6).
 #
+# Every reviewer in the panel pays for this artifact, so it is kept tight:
+# 5 lines of context rather than 10, and the untracked listing capped. It stays
+# repo-wide on purpose — an untracked file appears in no diff, so scoping the
+# listing to the diff's own directories would hide exactly the brand-new source
+# file a reviewer most needs to see.
+#
+# Oversize diffs are NOT silently truncated. Past MAX_DIFF_BYTES the body is
+# split into one part per file under `<out>.parts/`, and the main file becomes
+# an index of those parts — so the controller can dispatch per-file reviewers
+# instead of handing every reviewer a diff that will blow out their context.
+#
 # Usage:
 #   package-diff <base> [head]
 #     base   git ref to diff from (e.g. the commit before implementation)
 #     head   git ref to diff to; if omitted, diffs base..working-tree
 #
+# Env:
+#   SKEPTIC_DIFF_CONTEXT     lines of context (default 5)
+#   SKEPTIC_MAX_DIFF_BYTES   split threshold (default 262144, ~65k tokens)
+#   SKEPTIC_MAX_UNTRACKED    cap on the untracked listing (default 50)
+#
 # Prints the path to the generated markdown file on stdout.
 set -euo pipefail
+
+CONTEXT_LINES="${SKEPTIC_DIFF_CONTEXT:-5}"
+MAX_DIFF_BYTES="${SKEPTIC_MAX_DIFF_BYTES:-262144}"
+MAX_UNTRACKED="${SKEPTIC_MAX_UNTRACKED:-50}"
 
 base="${1:?usage: package-diff <base> [head]}"
 head="${2:-}"
 
 out="$(mktemp -t skepticism-diff.XXXXXX)"
 out="${out}.md"
+body="$(mktemp -t skepticism-diffbody.XXXXXX)"
+trap 'rm -f "$body"' EXIT
+
+git diff -U"$CONTEXT_LINES" "$base" ${head:+"$head"} > "$body"
+bytes="$(wc -c < "$body" | tr -d '[:space:]')"
 
 {
   if [[ -n "$head" ]]; then
@@ -35,14 +60,38 @@ out="${out}.md"
   git diff --stat "$base" ${head:+"$head"}
   echo
 
-  echo "## Untracked files (not in diff below)"
-  git ls-files --others --exclude-standard || true
+  echo "## Untracked files (not in the diff below)"
+  untracked="$(git ls-files --others --exclude-standard 2>/dev/null || true)"
+  untracked_count="$(printf '%s' "$untracked" | grep -c . || true)"
+  printf '%s\n' "$untracked" | head -n "$MAX_UNTRACKED"
+  if [[ "$untracked_count" -gt "$MAX_UNTRACKED" ]]; then
+    echo "… and $((untracked_count - MAX_UNTRACKED)) more (capped at ${MAX_UNTRACKED})"
+  fi
   echo
 
-  echo "## Full diff (10 lines of context)"
-  echo '```diff'
-  git diff -U10 "$base" ${head:+"$head"}
-  echo '```'
+  if [[ "$bytes" -le "$MAX_DIFF_BYTES" ]]; then
+    echo "## Full diff (${CONTEXT_LINES} lines of context)"
+    echo '```diff'
+    cat "$body"
+    echo '```'
+  else
+    parts="${out%.md}.parts"
+    mkdir -p "$parts"
+    echo "## OVERSIZE — split into per-file parts"
+    echo
+    echo "The diff is ${bytes} bytes (cap ${MAX_DIFF_BYTES}). It has been split so"
+    echo "reviewers can be dispatched per file instead of each reading the whole"
+    echo "thing. Nothing was truncated — every changed file has a part below."
+    echo
+    n=0
+    while IFS= read -r f; do
+      [[ -n "$f" ]] || continue
+      n=$((n + 1))
+      part="${parts}/$(printf '%03d' "$n")-$(echo "$f" | tr '/' '_').diff"
+      git diff -U"$CONTEXT_LINES" "$base" ${head:+"$head"} -- "$f" > "$part"
+      echo "- \`${f}\` → \`${part}\` ($(wc -c < "$part" | tr -d '[:space:]') bytes)"
+    done < <(git diff --name-only "$base" ${head:+"$head"})
+  fi
 } > "$out"
 
 echo "$out"

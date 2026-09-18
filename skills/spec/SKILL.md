@@ -30,8 +30,11 @@ mechanically. A vague spec poisons every downstream phase — this is the highes
 3. **Propose 2–3 approaches** with trade-offs and a recommendation, when there
    is a real design choice. Let the user pick before you write the spec.
 
-4. **Write `spec.md`** to `docs/skepticism/<feature-slug>/spec.md` using the
-   template below.
+4. **Write `spec.md`** to `.skepticism/runs/<feature-slug>/spec.md` using the
+   template below. If that directory doesn't exist yet, create it with
+   `${CLAUDE_PLUGIN_ROOT}/scripts/state init <feature-slug> "<summary>"`, which
+   also excludes `.skepticism/` from git locally — the spec is a working
+   artifact and never reaches the remote.
 
 5. **Self-review the spec** for placeholders, contradictions, vague words
    ("fast", "properly", "handle gracefully"), and untestable claims. Fix them.
@@ -43,9 +46,11 @@ mechanically. A vague spec poisons every downstream phase — this is the highes
 
 Three layers: a design narrative (human-friendly), **EARS requirements** with
 stable REQ-IDs (one unambiguous SHALL each), and **Given/When/Then** acceptance
-criteria that cite the REQ-IDs they cover. The REQ-IDs flow downstream into test
-comments, so coverage becomes mechanically checkable. See
-`reference/spec-format.md` for the full notation; the template:
+criteria that cite the REQ-IDs they cover. Downstream, the test-author maps each
+REQ-ID to a runnable test node ID in `coverage.md`, so coverage is mechanically
+checkable — the REQ-IDs stay in the run's artifacts and never appear in code or
+test comments. See `reference/spec-format.md` for the full notation; the
+template:
 
 ```markdown
 # Spec: <feature name>

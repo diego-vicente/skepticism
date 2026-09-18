@@ -16,6 +16,10 @@ Follow-up policy:
 - When it presents a spec for approval → reply "Approved, proceed."
 - If it asks the test command → reply "python3 -m unittest discover -q" (the
   fixture ships `.skepticism/` unittest gate overrides; pytest is not installed).
+- If it asks whether to auto-commit each phase → reply "Yes, commit each phase."
+- If it presents a scaffolding trade-off → reply "Build it, no shortcuts."
+  (`slugify` is a pure function, so there should be nothing to decide; being
+  asked anyway is not a failure, but stalling on it would be.)
 - If it asks any other reasonable clarifying question → give the obvious answer
   consistent with the requirements above; never tell it to skip a phase.
 - Do NOT hand-write code or tests yourself; let the subagents do it.

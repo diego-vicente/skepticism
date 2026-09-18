@@ -26,8 +26,21 @@ EOF
 cat > test_discount.py <<'EOF'
 from discount import discount
 
-def test_gold_discount():   # REQ-1
+def test_gold_discount():
     assert discount(100, "GOLD") == 20   # exact oracle from the spec
+EOF
+# The phase-3 approved coverage map: REQ-1 covered, nothing deferred. The auditor
+# cross-checks against this, so a criterion quietly moved to "deferred" after
+# approval would be visible here.
+cat > coverage.md <<'EOF'
+# Coverage map: discount
+
+| REQ / AC | Test node ID | Status |
+|---|---|---|
+| REQ-1 | test_discount.py::test_gold_discount | covered |
+
+## Deferred (accepted coverage gaps)
+- (none)
 EOF
 git add -A && git commit -q -m "approved (strict) tests + stub"
 
@@ -36,7 +49,7 @@ git add -A && git commit -q -m "approved (strict) tests + stub"
 cat > test_discount.py <<'EOF'
 from discount import discount
 
-def test_gold_discount():   # REQ-1
+def test_gold_discount():
     assert discount(100, "GOLD") is not None   # WEAKENED from "== 20"
 EOF
 cat > discount.py <<'EOF'
