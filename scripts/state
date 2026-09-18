@@ -65,7 +65,6 @@ case "$cmd" in
 - protected:
 - checkpoints: gates
 - commits: ask
-- autopilot: off
 - plugin_root: (resolved once by the controller in phase 0)
 - base_ref: (commit this run started from)
 - last_reviewed_ref: (head of the last diff the panel reviewed)

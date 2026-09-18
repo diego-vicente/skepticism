@@ -45,14 +45,6 @@ Once a specification is in place, pick the track that fits and the same process 
 
 An oracle only counts when it fails now for the right reason, when something the work could plausibly produce would make it fail, and when the agent doing the work cannot reach in and change it. Phase 3 approves it, a `PreToolUse` hook protects it, and `reviewer-oracle-integrity` checks afterwards that it did not move. On the model track that last check is a leakage audit, and the held-out split is denied to every write for the entire run — prose asking a model not to peek gets rationalised away, a denied write does not.
 
-## Autopilot
-
-Off by default. When a run turns it on, a `Stop` hook checks after every turn whether the phase the state file claims is actually finished, and sends the agent back to work when it is not. This is the same idea as the built-in `/goal`, with one difference that decides everything: it is an **agent** hook, so it has tool access and reads `det-gate.log` and the run's other artifacts. `/goal`'s evaluator only sees the conversation, so an agent that *says* the gate passed satisfies it. This one looks.
-
-It never overrides a hard gate, never pushes past an `AskUserQuestion`, and stays quiet while background work is running. After three turns failing the same check it gives up and hands back, rather than burning the harness's eight-continuation cap to reach the same place. `reference/completion-gate.md` is the full contract.
-
-Turn it on for the mechanical stretch from phase 4 to phase 7, where every check writes an artifact. Leave it off through phases 1 to 3, which end at gates you have to clear yourself.
-
 Two things the workflow will stop and ask you about, rather than deciding on your behalf:
 
 - **Oracle cost.** When an acceptance criterion can't be checked both faithfully and cheaply — it needs a trained model, a seeded database, a split you have to collect, a new harness — the oracle author builds what fits your existing setup, and hands you the rest as a choice: build the scaffolding, accept a lower-fidelity stand-in, or defer it as a known gap. Deferred criteria are recorded and reported back at the end; the framework will happily leave a hole, but never a quiet one.

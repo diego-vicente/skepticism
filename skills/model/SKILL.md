@@ -2,15 +2,6 @@
 description: The model track of the skeptic adversarial flow: the oracle is a held-out evaluation plus a baseline the current model does not beat, frozen before training starts. Guards against leakage, a metric that does not measure the goal, and tuning on the test set.
 when_to_use: Training, fine-tuning, or evaluating a machine-learning model, or reviewing a reported metric — "is this result real", "did we leak", "is this better than baseline".
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
-hooks:
-  Stop:
-    - hooks:
-        - type: agent
-          timeout: 120
-          prompt: |
-            Read ${CLAUDE_PLUGIN_ROOT}/reference/completion-gate.md and apply it
-            to this Stop event, then return only its JSON verdict.
-            Hook input: $ARGUMENTS
 ---
 
 # Skeptic — model track
