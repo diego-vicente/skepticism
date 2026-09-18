@@ -100,4 +100,24 @@ else
   assert_eq "pack does not hardcode a specific plugin" "absent" "absent"
 fi
 
+# ── The run directory never appears in `git status` ─────────────────────────
+# state init normally registers the exclusion, but this script runs standalone
+# too. A run directory visible as untracked is the footprint Iron Rule 6 forbids,
+# and the user never consented to it.
+GITP="$WORK/gitproj"
+mkdir -p "$GITP/src"
+( cd "$GITP" \
+  && git init -q \
+  && git config user.email t@t && git config user.name t \
+  && printf 'x=1\n' > src/a.py \
+  && printf 'node_modules/\n' > .gitignore \
+  && git add -A && git commit -qm init )
+
+( cd "$GITP" && bash "$CP" feat >/dev/null )
+status="$( cd "$GITP" && git status --porcelain )"
+assert_empty "run dir never shows in git status" "$status"
+assert_file_contains "exclusion is registered locally" "$GITP/.git/info/exclude" ".skepticism/"
+gi="$( cat "$GITP/.gitignore" )"
+assert_eq   "the project .gitignore is untouched" "node_modules/" "$gi"
+
 summary

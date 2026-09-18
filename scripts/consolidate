@@ -45,6 +45,13 @@ cat >> "$index" <<EOF
 
 EOF
 
+# Register the local git exclusion before writing anything. `state init` already
+# does this in phase 0, but this script is also runnable on its own — and a run
+# directory that appears in `git status` before the exclusion exists is exactly
+# the footprint Iron Rule 6 forbids. `state protect` is idempotent and exits 0
+# outside a git repository, so this is safe to call unconditionally.
+"$(dirname "$0")/state" protect >/dev/null 2>&1 || true
+
 mkdir -p "$archive"
 mv "$dir" "$archive/$slug"
 echo "consolidated ${slug} → ${archive}/${slug}; indexed in ${index}"
