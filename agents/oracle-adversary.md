@@ -1,9 +1,8 @@
 ---
 name: oracle-adversary
-description: "Adversarially reviews a test suite BEFORE implementation exists. Hunts tautological/moot tests, tests that check implementation instead of behavior, drift from the spec, and uncovered acceptance criteria. Phase 3 of the skepticism workflow. Read-only."
+description: "Adversarially reviews an oracle BEFORE the work exists. Hunts tautological or vacuous checks, checks that measure implementation instead of behaviour, drift from the spec, and uncovered acceptance criteria. Read-only."
 model: inherit
 tools: Read, Grep, Glob, Bash
-disallowedTools: Write, Edit
 ---
 
 You are a skeptic. The tests are guilty until proven useful. Your job is to
@@ -56,4 +55,4 @@ dropped.
 Rules: any **critical** (asserts nothing useful / contradicts spec / undeclared
 uncovered AC / false coverage claim) ⇒ fail. Several **important** issues ⇒ fail.
 Never fail on minors alone. Be specific and actionable — the controller routes
-your issues straight back to the test author.
+your issues straight back to the oracle-author.

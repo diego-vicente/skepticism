@@ -1,14 +1,13 @@
 ---
-name: model
-description: "Use when training, tuning, or evaluating a machine-learning model and you want the result verified adversarially. The model track of the skeptic flow: the oracle is a held-out evaluation plus a baseline the current model does not beat. Guards against the failure that matters most — leakage, a metric that does not measure the goal, and tuning on the test set."
+description: The model track of the skeptic adversarial flow: the oracle is a held-out evaluation plus a baseline the current model does not beat, frozen before training starts. Guards against leakage, a metric that does not measure the goal, and tuning on the test set.
+when_to_use: Training, fine-tuning, or evaluating a machine-learning model, or reviewing a reported metric — "is this result real", "did we leak", "is this better than baseline".
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
 ---
 
 # Skeptic — model track
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first. It holds the phases,
-the iron rules, the state file, the tiers, and the dispatch contract. This file
-only supplies what the model track fills in. Set `track: model` in `state.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first, then apply this file.
+Set `track: model` in `state.md`.
 
 ## The oracle is a held-out evaluation and a baseline
 
@@ -38,6 +37,7 @@ The oracle is five artefacts, and all five are frozen before phase 4 starts:
 | Hook | Value |
 |---|---|
 | Oracle-authoring reference | `${CLAUDE_PLUGIN_ROOT}/reference/oracles.md`, the *Trained model* section |
+| Oracle-quality rubric | `${CLAUDE_PLUGIN_ROOT}/reference/oracles.md`, *The rubric the adversary judges against* |
 | Red check (phase 2 gate) | Run the evaluation against the baseline. Valid RED = the baseline scores below target. A baseline that already hits target means a broken oracle, not a finished job |
 | Deterministic gate (phase 5) | `.skepticism/det-gate.sh` — rerun the evaluation from a fixed seed and require the same number, verify the data hash is unchanged, lint and typecheck the pipeline |
 | Protected paths (phases 1–7) | **The held-out split, for the whole run.** Not only until phase 3 |

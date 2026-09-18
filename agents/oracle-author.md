@@ -1,6 +1,6 @@
 ---
 name: oracle-author
-description: "Writes failing tests from an approved spec — and NO production code. Used in phase 2 of the skepticism workflow. Proves each test fails because the implementation is missing, not because of an error, and surfaces test-cost trade-offs for the user to decide."
+description: "Builds the oracle from an approved spec, and nothing else — failing tests on the coding track, a held-out evaluation and baseline, a pre-registered hypothesis. Proves the oracle fails because the work is missing, not because the oracle is broken, and surfaces scaffolding trade-offs for the user to decide."
 model: inherit
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---

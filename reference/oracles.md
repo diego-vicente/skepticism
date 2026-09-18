@@ -1,9 +1,6 @@
 # Designing an oracle
 
-An **oracle** is the thing that can say *not yet* before the work exists. This
-file is for `skeptic:work` with `track: none` — a task that fits none of the
-three tracks — and for the model and analysis tracks, which point here for the
-detail their skill files summarise.
+An **oracle** is the thing that can say *not yet* before the work exists.
 
 ## The test every oracle must pass
 
@@ -29,10 +26,27 @@ run a hundred times is a feedback loop.
 analysis plan that yields its conclusion on shuffled data. Phase 2's red check
 exists to catch this and nothing else.
 
-**The captured oracle** is one the builder can move. A test the implementer
+**The captured oracle** is one the builder can move. A test the builder
 rewrote, a threshold lowered after the first disappointing run, a hypothesis
 restated once the data was seen. Phase 3 approves the oracle and
 `reviewer-oracle-integrity` checks afterwards that it did not move.
+
+## The rubric the adversary judges against
+
+Phase 3 scores the oracle on five questions. The coding track has a fuller rubric
+in `test-quality-rubric.md`; every other track uses these.
+
+1. **Does it fail now, for the stated reason?** Name the line of the goal it
+   fails against. A red from a broken harness is not a red.
+2. **Name one plausible outcome it would reject.** If you cannot, the oracle
+   measures nothing. This question catches more bad oracles than the other four
+   together.
+3. **Does it measure behaviour or mechanism?** An oracle tied to how the work is
+   built breaks on every refactor and passes on a wrong result.
+4. **Where did each expected value come from?** The goal, a reference
+   implementation, or an invariant — never from the same logic as the work.
+5. **Is every acceptance criterion covered or declared?** An accepted gap in
+   `coverage.md` is fine. An undeclared one is critical.
 
 ## Worked examples
 

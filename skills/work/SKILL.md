@@ -1,16 +1,16 @@
 ---
-name: work
-description: "The adversarial verification flow, for any goal that can be checked. Runs a goal-first, oracle-first state machine: goal → build an oracle that currently fails → adversarially review the oracle → do the work → adversarially review the result → report. Generation and verification stay in separate contexts. Invoked directly for a task with no track of its own; skeptic:coding, skeptic:model and skeptic:analysis layer their specifics on top. You are the controller; you drive the phases and dispatch subagents."
+description: Shared controller body for the skeptic adversarial flow: the phases, the iron rules, the state file, the risk tiers and the subagent dispatch contract. Read by skeptic:coding, skeptic:model and skeptic:analysis, which layer their track specifics on top; usable directly for work none of the three tracks fits.
+when_to_use: Read after a track skill has routed here, or invoked directly for a goal with no track of its own, where an oracle is designed with the user from reference/oracles.md.
+disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
 ---
 
 # Skepticism — adversarial verification controller
 
-You are the **controller** of a state machine. Your job is NOT to write the
-feature yourself in one pass. Your job is to move the work through phases,
-dispatch the right subagents at each phase, enforce the gates, and report back
-to the user. Generation and verification are kept in **separate contexts** on
-purpose — that is the entire point of this workflow.
+You are the **controller** of a state machine. You move the work through phases,
+dispatch the right subagent at each one, enforce the gates, and report back to
+the user. Generation and verification stay in **separate contexts**, which is
+what removes confirmation bias.
 
 ## The Iron Rules
 
@@ -62,9 +62,9 @@ invoked directly as `skeptic:work`, no track file applies — read
 `${CLAUDE_PLUGIN_ROOT}/reference/oracles.md` and agree an oracle with the user
 before phase 2.
 
-If you catch yourself thinking "this is too simple for the full process" or
-"I'll just write this one bit myself" — STOP. That is the rationalization this
-framework exists to prevent. Pick a lighter tier instead (see Risk Tiers).
+"This is too simple for the full process" and "I'll just write this one bit
+myself" are the rationalizations Iron Rules 2 and 3 exist to stop. Pick a lighter
+tier instead.
 
 ## The state machine
 
@@ -137,8 +137,7 @@ det-gate.log, review.md}`.
 
 At the start of every invocation:
 1. Ask the user for (or infer) the feature slug. Look for an existing
-   `.skepticism/runs/<slug>/state.md`. (A run started under the old
-   `docs/skepticism/<slug>/` layout still resolves — move it and carry on.)
+   `.skepticism/runs/<slug>/state.md`.
 2. If it exists: read it, announce the current phase, and resume there.
 3. If not, this is a new run. Before anything else:
    - **Confirm a goal exists or will exist** (Iron Rule 1).
@@ -172,21 +171,16 @@ At the start of every invocation:
      never adopted.
    - Pick a tier (below) and confirm the commit policy (below).
 
-**No-spec guard (act on this before any tests or code).** If the user asks to
-skip the spec or jump straight to implementation, do NOT comply. Say so plainly
-— e.g. *"This workflow needs an approved spec first: it's the contract the tests
-and reviews check against. Without one, there's nothing meaningful to test or
-verify."* — and offer the two ways forward:
-  a. **Author one now** — run Phase 1 (`/skeptic:spec`). For a small change this
-     is quick; even the `quick` tier requires at least a minimal spec (one or two
-     EARS requirements + acceptance criteria).
-  b. **Adopt an existing spec** — if the user already has a spec/PRD/design doc,
-     point you at it; read it, confirm it has testable acceptance criteria (add
-     REQ-IDs / Given-When-Then if missing), save it as the run's `spec.md`, and
-     have the user approve it. Then proceed.
-If the user insists on skipping entirely, stop and explain this is the one thing
-the framework won't do — they can write plain code without `/skeptic:coding` if
-they don't want it verified. Do not silently proceed.
+**The two ways forward (Iron Rule 1).** When the user asks to skip the goal,
+say why you cannot and offer both:
+  a. **Author one now** — run phase 1 (`/skeptic:spec`). Even the `quick` tier
+     needs one or two EARS requirements and their acceptance criteria.
+  b. **Adopt an existing one** — read the user's spec, PRD, or design doc,
+     confirm it has testable acceptance criteria and add REQ-IDs or
+     Given/When/Then where they are missing, save it as the run's `spec.md`, and
+     have the user approve it.
+If the user insists on skipping entirely, stop. They can do the work without
+`/skeptic:*` if they do not want it verified. Never silently proceed.
 
 For context on prior work, read `.skepticism/INDEX.md` (a one-page ledger of
 completed runs) — NOT the full artifacts of every past run. Finished runs are
@@ -200,7 +194,7 @@ Both are run-level settings, confirmed once at the start and stored in
 `state.md`. Never change them mid-run without saying so.
 
 **`checkpoints`** — where you stop and hand control back:
-- `gates` (default) — stop only at the two hard gates (spec approval, test
+- `gates` (default) — stop only at the two hard gates (goal approval, oracle
   review) and at any scaffolding decision. This is the balance point: an early
   stop that catches a bad test suite saves every downstream phase.
 - `every-phase` — stop after each phase. Use when you're debugging the workflow
@@ -212,8 +206,8 @@ A **decision point** is not a checkpoint and is never skipped: if a phase
 surfaces a genuine choice for the user (most often a scaffolding trade-off in
 phase 2), you ask, whatever `checkpoints` says. You do not get to pick for them.
 
-**`commits`** — auto-commit after each phase that changed files (phase 2 tests,
-phase 4 implementation). Ask once at run start; default to `ask` and take the
+**`commits`** — auto-commit after each phase that changed files (phase 2 oracle,
+phase 4 work). Ask once at run start; default to `ask` and take the
 answer. When on:
 - Never commit on the default branch — create a feature branch first.
 - Messages describe the **feature**, not the process: "Add session token
@@ -235,10 +229,9 @@ user override. Never silently choose.
 | `standard` (default) | ordinary feature or bugfix | det-gate + `reviewer-correctness` + `reviewer-quality` + `perturbation-adversary` |
 | `paranoid` | security/auth path, public API, data migration, concurrency, large/multi-file diff | full panel + `reviewer-oracle-integrity` + `perturbation-adversary` + docs check; on any **Critical** finding, dispatch a second independent reviewer of the same lens and require agreement (majority vote) before blocking |
 
-Phase 2 and 3 (author + adversarially review the tests) run in **every** tier —
-the failing-tests-first discipline is non-negotiable. Tiers only scale the
-phase-6 implementation panel and whether test authoring/review uses one pass or
-a refute-and-revise loop.
+Phases 2 and 3 run in **every** tier — the failing-oracle-first discipline is
+non-negotiable. Tiers scale only the phase-6 panel, and whether the oracle is
+authored and reviewed in one pass or in a refute-and-revise loop.
 
 Once the implementation exists, sanity-check the tier against reality:
 `package-diff --stat` shows the measured size of the change. If it lands far
@@ -317,7 +310,7 @@ On fail → loop back to `oracle-author` with the issues **only** (not the whole
 history). Hard-cap at 3 loops; if still failing, surface to the user.
 
 GATE: verdict pass. Write `oracle-review.md`, set `phase: work`. From here
-the PreToolUse hook will permit edits to source. Commit the tests if
+the PreToolUse hook will permit edits to source. Commit the oracle if
 `commits: on`, and record `last_reviewed_ref`.
 
 ## Phase 4 — Work (builder subagent)
@@ -346,18 +339,11 @@ GATE: det-gate exits 0. On failure, loop back to `builder` with the log.
 Do NOT spend LLM-reviewer tokens on code that fails deterministic checks.
 Set `phase: review`.
 
-**Optional (recommended for `standard`+ tiers): mutation testing.** Now that the
-suite is green against real code, run a mutation tester if one is configured for
-the stack (Stryker for JS/TS, mutmut/cosmic-ray for Python, PIT for Java,
-cargo-mutants for Rust, go-mutesting for Go). A surviving mutant means a test is
-too weak to catch that bug — exactly the "useless test" failure mode. Treat the
-mutation score as a quality signal, not a hard gate by default (it is slow);
-feed surviving mutants to the oracle-adversary/builder as findings. This is
-the objective, ungameable counterpart to phase 3's mental mutation-kill check.
-Coverage % is NOT a substitute — a test can have 100% coverage and kill no
-mutants. Configure it via `.skepticism/det-gate.sh` if you want it enforced —
-and when a real mutation tester is configured, skip the `perturbation-adversary`
-subagent entirely; it is the LLM approximation of a tool you now have.
+**Optional, recommended for `standard`+ tiers: run a real perturbation tool if
+the track has one.** It is the objective counterpart to the
+`perturbation-adversary`, and it replaces that subagent entirely when present.
+The coding track names its tools; configure one in `.skepticism/det-gate.sh` to
+make it a hard gate.
 
 ## Phase 6 — Review (adversarial panel)
 
@@ -366,7 +352,7 @@ First, prepare ONE shared diff so reviewers don't each re-explore the repo:
 a path. If it reports OVERSIZE, it has split the diff per file; dispatch a
 reviewer per part rather than handing anyone the whole thing.
 
-On the first pass `last_reviewed_ref` is the commit holding the *approved tests*,
+On the first pass `last_reviewed_ref` is the commit holding the *approved oracle*,
 so the diff is exactly the implementation — and any test the builder touched
 since approval, which is what `reviewer-oracle-integrity` audits. With
 `commits: off` there is no such commit: `last_reviewed_ref` stays at `base_ref`
@@ -427,17 +413,6 @@ stops costing context on future runs:
 Future runs read the one-page INDEX, not every past run's full artifacts. The
 index is local to this clone — that is the cost of Iron Rule 6, and it is the
 right trade.
-
-## Resolving plugin paths
-
-Reference docs and scripts live inside this plugin at `reference/` and
-`scripts/`, addressed below as `${CLAUDE_PLUGIN_ROOT}/…`. Claude Code expands
-that variable to an absolute path inline before you read this, so use the paths
-as-is. Resolve it **once** in phase 0, store it in `state.md`, and pass resolved
-absolute paths in every dispatch. (Fallback, only if you ever see the literal
-`${CLAUDE_PLUGIN_ROOT}` unexpanded on a very old Claude Code: resolve it once by
-`Glob`-ing for this plugin's `reference/spec-format.md` and substitute the real
-path.)
 
 ## Dispatch contract (cost discipline)
 

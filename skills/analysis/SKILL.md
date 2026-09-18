@@ -1,15 +1,13 @@
 ---
-name: analysis
-description: "Use when answering a question from data and you want the answer verified adversarially. The analysis track of the skeptic flow: the oracle is a pre-registered hypothesis with a stated falsification criterion, agreed before you look at the outcome. Guards against the failure that matters most — deciding what counts as an answer after seeing the data."
+description: The analysis track of the skeptic adversarial flow: the oracle is a pre-registered hypothesis with a stated falsification criterion, frozen before the outcome is visible. Guards against deciding what counts as an answer after seeing the data.
+when_to_use: Answering a question from data, running an experiment or an A/B readout, or checking a finding before it is acted on — "does the data support this", "is this effect real", "pre-register this analysis".
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
 ---
 
 # Skeptic — analysis track
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first. It holds the phases,
-the iron rules, the state file, the tiers, and the dispatch contract. This file
-only supplies what the analysis track fills in. Set `track: analysis` in
-`state.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first, then apply this file.
+Set `track: analysis` in `state.md`.
 
 ## The oracle is a pre-registered hypothesis
 
@@ -43,6 +41,7 @@ from one reached on the first, and the reader needs to know which.
 | Hook | Value |
 |---|---|
 | Oracle-authoring reference | `${CLAUDE_PLUGIN_ROOT}/reference/oracles.md`, the *Analysis* section |
+| Oracle-quality rubric | `${CLAUDE_PLUGIN_ROOT}/reference/oracles.md`, *The rubric the adversary judges against* |
 | Red check (phase 2 gate) | Run the frozen plan against a decoy. Valid RED = no answer appears. An answer on the decoy means the plan finds the conclusion in noise |
 | Deterministic gate (phase 5) | `.skepticism/det-gate.sh` — rerun the notebook or script top to bottom from a clean kernel and require identical numbers, verify the data hash, lint the pipeline |
 | Protected paths (phases 1–7) | The frozen plan and the raw data. Neither is edited after phase 3 |

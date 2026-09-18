@@ -1,6 +1,6 @@
 ---
-name: spec
-description: "Use to turn a rough idea into an approved, verifiable specification — a feature, a model to train, or a question to answer. Explores the existing work, asks clarifying questions one at a time, then writes a design doc plus EARS requirements and Given/When/Then acceptance criteria. Phase 1 of the skeptic flow, but usable on its own."
+description: Turns a rough idea into an approved, verifiable specification — a feature, a model to train, or a question to answer. Explores the existing work, asks clarifying questions one at a time, then writes a design doc plus EARS requirements and Given/When/Then acceptance criteria.
+when_to_use: Writing or sharpening a spec, a PRD, or a design doc; adopting an existing one into the skeptic flow; phase 1 of every skeptic track, and usable on its own.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -44,51 +44,15 @@ mechanically. A vague spec poisons every downstream phase — this is the highes
 
 ## The spec format
 
-Three layers: a design narrative (human-friendly), **EARS requirements** with
-stable REQ-IDs (one unambiguous SHALL each), and **Given/When/Then** acceptance
-criteria that cite the REQ-IDs they cover. Downstream, the oracle-author maps each
-REQ-ID to a runnable test node ID in `coverage.md`, so coverage is mechanically
-checkable — the REQ-IDs stay in the run's artifacts and never appear in code or
-test comments. See `reference/spec-format.md` for the full notation; the
-template:
+Three layers: a design narrative for the human, **EARS requirements** with stable
+REQ-IDs (one unambiguous SHALL each), and **Given/When/Then** acceptance criteria
+that cite the REQ-IDs they cover. Downstream, the oracle-author maps each REQ-ID
+to a runnable check in `coverage.md`, so coverage is mechanically checkable. The
+REQ-IDs stay in the run's artifacts and never appear in code or comments.
 
-```markdown
-# Spec: <feature name>
-
-## Summary
-One paragraph: what this is and why it exists.
-
-## Context
-What already exists, what this touches, links to relevant code/docs.
-
-## Design
-The chosen approach and the key decisions (and what was rejected, briefly).
-Data shapes, interfaces, and module responsibilities.
-
-## Out of scope
-Explicit non-goals. What we are deliberately NOT building.
-
-## Requirements (EARS)
-One SHALL per requirement; pick the EARS pattern that fits:
-- **REQ-1** — WHEN <trigger>, the system SHALL <response>.
-- **REQ-2** — IF <unwanted condition>, THEN the system SHALL <response>.
-- **REQ-3** — WHILE <state>, the system SHALL <response>.
-- **REQ-4** — The system SHALL <always-true response>.  (ubiquitous)
-
-## Acceptance criteria (Given/When/Then)
-Each cites the REQ-ID(s) it covers. Cover happy paths, edges, AND errors.
-- **AC1 — <name>** — covers REQ-1
-  - Given <preconditions>
-  - When <action / trigger>
-  - Then <observable, specific result — exact values, messages, states>
-- **AC2 — <edge case>** — covers REQ-3
-  - Given … / When … / Then …
-- **AC3 — <error / failure mode>** — covers REQ-2
-  - Given … / When … / Then <exact error behavior: message, code, no-op, rollback>
-
-## Open questions
-Anything still unresolved (should be empty before approval).
-```
+**The template and the EARS patterns live in
+`${CLAUDE_PLUGIN_ROOT}/reference/spec-format.md`. Read it before you write, and
+copy the template from there.**
 
 ## Rules for good requirements & criteria
 

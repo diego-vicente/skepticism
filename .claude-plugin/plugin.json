@@ -1,6 +1,6 @@
 {
   "name": "skeptic",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Adversarial, goal-first agentic verification. One flow \u2014 goal, an oracle that fails first, the work, an adversarial panel \u2014 with tracks for code, machine-learning models, and data analysis.",
   "author": {
     "name": "Diego Vicente",

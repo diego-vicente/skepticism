@@ -13,8 +13,8 @@ downstream phase. Three layers, each feeding the next:
 
 REQ-IDs live in `spec.md` and `coverage.md` — both inside the run directory,
 which never reaches the remote. They must **not** appear in production code or
-test files (see the coding essentials); a repo carries its own history, not the
-process that produced it.
+test files (Iron Rule 6); a repo carries its own history, not the process that
+produced it.
 
 Why these choices: **EARS** forces each requirement into one unambiguous,
 testable claim (the same notation AWS Kiro uses), removing the drift that lets an

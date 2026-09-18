@@ -11,7 +11,7 @@ this test fail?"** If not, the test asserts nothing useful. Strengthen it.
 
 **Sections:** 1. Test behavior, not implementation · 2. Choosing WHAT to test
 (partitioning, boundaries, risk, integration bias) · 3. Choosing WHAT to assert
-(Right-BICEP) · 4. Oracle discipline · 5. Properties · 6. FIRST · 7. Structure
+(Right-BICEP) · 4. Expected-value discipline · 5. Properties · 6. FIRST · 7. Structure
 (AAA, DAMP) · 8. AI test anti-patterns · 9. Test cost and scaffolding.
 
 ---
@@ -67,10 +67,9 @@ For boundary correctness specifically, the **CORRECT** checklist: Conformance
 (format), Ordering, Range, Reference (valid external refs), Existence
 (null/missing), Cardinality (counts/length), Time (expiry, ordering of events).
 
-## 4. Oracle discipline (the anti-tautology rule)
+## 4. Expected-value discipline (the anti-tautology rule)
 
-Every assertion needs an **oracle** — a trustworthy source for the expected
-value. In order of preference:
+Every assertion needs a trustworthy source for its expected value. In order of preference:
 1. **Hardcoded from the spec** — `assert total == 30` because the spec says so.
 2. **Reference implementation** — compare against a known-good library or a
    deliberately simple alternative.
@@ -122,10 +121,9 @@ perturbed (e.g. swapping synonyms shouldn't change a classification).
   keeps each test readable top-to-bottom beats a shared helper that hides what's
   under test. Complete (body has everything needed to understand the result) and
   concise (nothing else). The readability bar is high; the abstraction bar is low.
-- **Tests are code too.** They follow the same readability and comment policy as
-  production code (the coding essentials): no commented-out code, comment only
-  the non-obvious *why* (e.g. why an edge case matters), and match the
-  surrounding test conventions.
+- **Tests are code too.** They follow the project's own code conventions, named
+  in `project.md`: no commented-out code, comment only the non-obvious *why*,
+  and match the surrounding test conventions.
 
 ## 8. AI test anti-patterns — do NOT do these
 

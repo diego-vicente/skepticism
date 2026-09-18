@@ -1,14 +1,13 @@
 ---
-name: coding
-description: "Use when building a feature, fixing a non-trivial bug, or changing behaviour in code and you want the work verified adversarially. The coding track of the skeptic flow: the oracle is a test suite that fails before the code exists. Runs spec → failing tests → adversarial test review → implement → adversarial code review → report."
+description: The coding track of the skeptic adversarial flow: the oracle is a test suite that fails before the code exists. Runs spec, failing tests, adversarial test review, implementation, adversarial code review, report — generation and verification in separate contexts.
+when_to_use: Building a feature, fixing a non-trivial bug, or changing behaviour in code, when the work should be verified adversarially rather than self-reviewed. Not for a one-line edit or a throwaway spike.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
 ---
 
 # Skeptic — coding track
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first. It holds the phases,
-the iron rules, the state file, the tiers, and the dispatch contract. This file
-only supplies what the coding track fills in. Set `track: coding` in `state.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/work/SKILL.md` first, then apply this file.
+Set `track: coding` in `state.md`.
 
 ## The oracle is a failing test suite
 

@@ -1,6 +1,6 @@
 ---
 name: perturbation-adversary
-description: "Surgically introduces a few plausible bugs (mutants) into already-green code and checks whether the tests catch them. A surviving mutant proves a test is too weak. Phase 6 of the skepticism workflow (standard+ tiers). Edits code to mutate but MUST revert every change."
+description: "Surgically introduces a few plausible defects into already-passing work and checks whether the oracle catches them — code mutants, a label shuffle, a feature ablation. A surviving defect proves the oracle is too weak. Edits to perturb but MUST revert every change."
 model: inherit
 tools: Read, Edit, Bash, Grep, Glob
 ---
