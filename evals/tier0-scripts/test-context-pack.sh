@@ -65,4 +65,39 @@ chmod +x "$PROJ/.skepticism/red-check.sh"
 ( cd "$PROJ" && bash "$CP" feat >/dev/null )
 assert_file_contains "reports the red-check override" "$PACK" "red-check.sh\`: yes"
 
+# ── Code conventions: discovered, never hardcoded ───────────────────────────
+# The pack must not name a specific plugin. A reader who installed skeptic alone
+# has to be told "not determined" and asked, not pointed at something they lack.
+CONV="$WORK/conv"
+mkdir -p "$CONV"
+( cd "$CONV" && HOME="$CONV" bash "$CP" feat >/dev/null )
+CPACK="$CONV/.skepticism/runs/feat/project.md"
+assert_file_contains "empty project reports not determined" "$CPACK" "not determined"
+assert_file_contains "and names the fallback"               "$CPACK" "match the surrounding"
+
+# A project convention document is found and named.
+printf '# How we write code here\n' > "$CONV/CONTRIBUTING.md"
+( cd "$CONV" && HOME="$CONV" bash "$CP" feat >/dev/null )
+assert_file_contains "finds a project document"             "$CPACK" "CONTRIBUTING.md"
+
+# A rules directory counts too.
+mkdir -p "$CONV/.claude/rules"
+( cd "$CONV" && HOME="$CONV" bash "$CP" feat >/dev/null )
+assert_file_contains "finds a project rules directory"      "$CPACK" ".claude/rules"
+
+# A house-rules skill in the user's install is reported, and labelled a guess.
+mkdir -p "$CONV/.claude/skills/house-rules"
+printf -- '---\nname: house-rules\ndescription: The house rules for writing code, coding standards for every language.\n---\n' \
+  > "$CONV/.claude/skills/house-rules/SKILL.md"
+( cd "$CONV" && HOME="$CONV" bash "$CP" feat >/dev/null )
+assert_file_contains "discovers a house-rules skill"        "$CPACK" "house-rules"
+assert_file_contains "labels the skill as a guess"          "$CPACK" "**guess**"
+
+# The pack never hardcodes the author's own plugin.
+if grep -q "manual-of-style" "$CPACK"; then
+  assert_eq "pack does not hardcode a specific plugin" "absent" "present"
+else
+  assert_eq "pack does not hardcode a specific plugin" "absent" "absent"
+fi
+
 summary

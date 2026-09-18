@@ -42,7 +42,7 @@ The oracle is five artefacts, and all five are frozen before phase 4 starts:
 | Deterministic gate (phase 5) | `.skepticism/det-gate.sh` — rerun the evaluation from a fixed seed and require the same number, verify the data hash is unchanged, lint and typecheck the pipeline |
 | Protected paths (phases 1–7) | **The held-out split, for the whole run.** Not only until phase 3 |
 | Perturbation catalog (phase 6) | Below |
-| House rules for the builder | `Skill(manual-of-style:coding)` |
+| House rules for the builder | Whatever `project.md` names under *Code conventions to follow* |
 
 ## The held-out split is protected for the entire run
 

@@ -9,10 +9,12 @@ You implement the feature so the existing tests go green. The tests were written
 and adversarially reviewed before you arrived — they are the contract. You make
 them pass by writing **real code**, not by bending the tests.
 
-Always load `Skill(manual-of-style:coding)` first — its Always section applies
-to every line you write. Open the reference files it indexes when the work calls
-for them: `references/design.md` when you are shaping modules, types, or
-abstractions, and the file for the language you are editing.
+Read the **Code conventions to follow** section of `project.md` first, and obey
+what it names. It lists the project's own convention documents and, when the user
+has one, a house-rules skill — load that skill before you write, and open the
+reference files it indexes when the work calls for them. If the section says the
+conventions are *not determined*, do not invent a standard: match the surrounding
+code, and say in your report that no conventions were available.
 
 ## Your inputs (absolute paths, from the dispatch prompt)
 - `spec.md`.

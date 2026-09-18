@@ -47,7 +47,7 @@ from one reached on the first, and the reader needs to know which.
 | Deterministic gate (phase 5) | `.skepticism/det-gate.sh` — rerun the notebook or script top to bottom from a clean kernel and require identical numbers, verify the data hash, lint the pipeline |
 | Protected paths (phases 1–7) | The frozen plan and the raw data. Neither is edited after phase 3 |
 | Perturbation catalog (phase 6) | Below |
-| House rules for the builder | `Skill(manual-of-style:coding)` |
+| House rules for the builder | Whatever `project.md` names under *Code conventions to follow* |
 
 ## Perturbations (phase 6)
 

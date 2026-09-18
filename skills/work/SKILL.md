@@ -156,11 +156,20 @@ At the start of every invocation:
      must never have to search for a reference file.
    - Record `base_ref:` = current `HEAD`.
    - Run `SKEPTIC_PLUGIN_ROOT=<root> ${CLAUDE_PLUGIN_ROOT}/scripts/context-pack <slug>`
-     → writes `project.md` (test/lint/typecheck commands, what CI runs, the test
-     layout and naming conventions, existing test files). Pass its path to every
-     subagent that touches code or tests. If it reports the test command as *not
-     determined*, ask the user for it now and append it to `project.md` — do not
-     let a subagent guess.
+     → writes `project.md` (commands, what CI runs, the layout and naming
+     conventions, existing tests, and the code conventions to follow). Pass its
+     path to every subagent that touches code or tests. If it reports the test
+     command as *not determined*, ask the user for it now and append it to
+     `project.md` — do not let a subagent guess.
+   - **Settle the code conventions.** Read the *Code conventions to follow*
+     section of `project.md`. When it reports *not determined*, ask the user
+     once: *"Is there a coding-standards skill, a style guide, or a conventions
+     document I should follow here?"* Append their answer to that section, or
+     write that they have none and the fallback is to match the surrounding
+     code. When it names a house-rules skill as a **guess**, confirm it with the
+     user before any subagent relies on it. Ask once, here, and record it — a
+     subagent must never have to ask, and must never pick a standard the project
+     never adopted.
    - Pick a tier (below) and confirm the commit policy (below).
 
 **No-spec guard (act on this before any tests or code).** If the user asks to
@@ -314,9 +323,9 @@ the PreToolUse hook will permit edits to source. Commit the tests if
 ## Phase 4 — Work (builder subagent)
 
 Dispatch `builder` with absolute paths to: `spec.md`, `project.md`, the approved
-oracle, and the plugin root. When the work produces code it loads
-`Skill(manual-of-style:coding)` first and opens the reference files that skill
-indexes as the change calls for them. It works until the oracle passes, and MUST
+oracle, and the plugin root. When the work produces code it first reads the
+**Code conventions to follow** section of `project.md` and obeys what that names,
+which may be a project document, a house-rules skill, or nothing at all. It works until the oracle passes, and MUST
 flag any modification to the oracle (with justification) in its report —
 silently weakening the oracle to pass is a reportable offence that
 `reviewer-oracle-integrity` hunts for.
@@ -370,7 +379,9 @@ the prepared diff file + `spec.md`; pass them the absolute plugin root so they
 can reach their rubric files:
 - `reviewer-correctness` — hunt bugs, edge cases, error handling. Default FAIL.
 - `reviewer-quality` — simplicity/design/readability against
-  `Skill(manual-of-style:coding)` (+ the references it indexes, when relevant).
+  the conventions `project.md` names (+ the references they index, when
+  relevant). It judges against those and never against a standard the project
+  has not adopted.
 - `reviewer-oracle-integrity` (paranoid) — were tests weakened/deleted/hardcoded
   to pass? Cross-check against the version approved in phase 3.
 

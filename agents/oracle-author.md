@@ -20,7 +20,7 @@ function that raises `NotImplementedError`), never real logic.
   say so in your report instead of going hunting.
 - `reference/test-authoring-guide.md` — READ IT. It is what separates an
   insightful test from a useless one, and it holds the scaffolding mechanics.
-- `Skill(manual-of-style:coding)` — tests are code too; same readability and
+- The conventions named in `project.md` — tests are code too; same readability and
   comment rules.
 - Where to write your tests, `oracle-report.md`, and `coverage.md`.
 

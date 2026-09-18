@@ -31,7 +31,7 @@ Nothing else counts. The three oracle conditions land as:
 | Deterministic gate (phase 5) | `${CLAUDE_PLUGIN_ROOT}/scripts/det-gate <base_ref>` — leak, lint, format, typecheck, suite, docs |
 | Protected paths (phases 1–3) | Source files. `scripts/gate-check` allows edits to tests and to `.skepticism/` throughout |
 | Perturbation catalog (phase 6) | `${CLAUDE_PLUGIN_ROOT}/reference/mutation-operators.md` |
-| House rules for the builder | `Skill(manual-of-style:coding)` |
+| House rules for the builder | Whatever `project.md` names under *Code conventions to follow* |
 
 ## Track notes
 

@@ -185,6 +185,59 @@ fi
   fi
   echo
 
+  # --- Code conventions -----------------------------------------------------
+  # Which rules the work follows is a property of the USER's setup, not of this
+  # framework. So this reports what it can see and labels the rest as unknown —
+  # the controller asks once and appends the answer, exactly as it does for a
+  # missing test command. Never hardcode a specific skill here: a reader who
+  # installed this plugin alone must not be pointed at something they lack.
+  echo "## Code conventions to follow"
+  conv_found=0
+
+  for doc in CLAUDE.md AGENTS.md CONTRIBUTING.md STYLE.md STYLEGUIDE.md \
+             CONVENTIONS.md .editorconfig docs/style.md docs/styleguide.md; do
+    if [[ -f "$doc" ]]; then
+      echo "- project document: \`${doc}\`"
+      conv_found=1
+    fi
+  done
+  for dir in .claude/rules .cursor/rules .github/instructions; do
+    if [[ -d "$dir" ]]; then
+      echo "- project rules directory: \`${dir}\`"
+      conv_found=1
+    fi
+  done
+
+  # A house-rules skill lives in the user's Claude Code install, not in the
+  # repository, so this is a guess and is labelled as one.
+  skill_guess=""
+  for cand in "${HOME}/.claude/skills"/*/SKILL.md \
+              "${HOME}/.claude/plugins/cache"/*/*/*/skills/*/SKILL.md; do
+    [[ -f "$cand" ]] || continue
+    head -n 12 "$cand" | grep -qiE 'coding (standard|convention|rule|style)|house rules for (writing|code)|code style' || continue
+    name="$(basename "$(dirname "$cand")")"
+    case "$cand" in
+      */plugins/cache/*) plug="$(echo "$cand" | sed -E 's|.*/cache/([^/]+)/.*|\1|')"; skill_guess="${skill_guess} ${plug}:${name}" ;;
+      *)                 skill_guess="${skill_guess} ${name}" ;;
+    esac
+  done
+  if [[ -n "${skill_guess// /}" ]]; then
+    echo "- house-rules skill (**guess**, confirm before relying on it):${skill_guess}"
+    conv_found=1
+  fi
+
+  if [[ "$conv_found" -eq 0 ]]; then
+    echo "- **not determined** — no project convention document and no house-rules"
+    echo "  skill found. The controller must ask the user whether one exists and"
+    echo "  append the answer here. If the user has none, say so explicitly: the"
+    echo "  fallback is to match the surrounding code, and nothing else."
+  fi
+  echo
+  echo "Follow what this section names, in this order: a project document beats a"
+  echo "house-rules skill, and both beat your own taste. When none is named, match"
+  echo "the surrounding code and do not invent a standard."
+  echo
+
   # --- Overrides ------------------------------------------------------------
   echo "## Gate overrides"
   echo "- \`${ROOT}/det-gate.sh\`: $(exists "${ROOT}/det-gate.sh")"
