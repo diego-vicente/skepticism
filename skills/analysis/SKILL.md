@@ -2,6 +2,15 @@
 description: The analysis track of the skeptic adversarial flow: the oracle is a pre-registered hypothesis with a stated falsification criterion, frozen before the outcome is visible. Guards against deciding what counts as an answer after seeing the data.
 when_to_use: Answering a question from data, running an experiment or an A/B readout, or checking a finding before it is acted on — "does the data support this", "is this effect real", "pre-register this analysis".
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
+hooks:
+  Stop:
+    - hooks:
+        - type: agent
+          timeout: 120
+          prompt: |
+            Read ${CLAUDE_PLUGIN_ROOT}/reference/completion-gate.md and apply it
+            to this Stop event, then return only its JSON verdict.
+            Hook input: $ARGUMENTS
 ---
 
 # Skeptic — analysis track

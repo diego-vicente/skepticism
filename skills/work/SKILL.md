@@ -3,6 +3,15 @@ description: Shared controller body for the skeptic adversarial flow: the phases
 when_to_use: Read after a track skill has routed here, or invoked directly for a goal with no track of its own, where an oracle is designed with the user from reference/oracles.md.
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
+hooks:
+  Stop:
+    - hooks:
+        - type: agent
+          timeout: 120
+          prompt: |
+            Read ${CLAUDE_PLUGIN_ROOT}/reference/completion-gate.md and apply it
+            to this Stop event, then return only its JSON verdict.
+            Hook input: $ARGUMENTS
 ---
 
 # Skepticism — adversarial verification controller
@@ -111,6 +120,7 @@ Format:
 - phase: goal | red-oracle | oracle-review | work | det-gate | review | report | done
 - checkpoints: gates | every-phase | none
 - commits: ask | on | off
+- autopilot: off | on
 - plugin_root: <absolute path, resolved once in phase 0>
 - base_ref: <commit this run started from>
 - last_reviewed_ref: <head of the last diff the panel reviewed>
@@ -169,7 +179,7 @@ At the start of every invocation:
      user before any subagent relies on it. Ask once, here, and record it — a
      subagent must never have to ask, and must never pick a standard the project
      never adopted.
-   - Pick a tier (below) and confirm the commit policy (below).
+   - Pick a tier (below), and confirm the commit policy and `autopilot` (below).
 
 **The two ways forward (Iron Rule 1).** When the user asks to skip the goal,
 say why you cannot and offer both:
@@ -217,6 +227,19 @@ answer. When on:
 Phase commits pay for themselves three times over: they give phase 6 a stable
 base for delta re-review, they give `perturbation-adversary` the clean tree it
 requires, and they make a loop-back a `git revert` instead of an argument.
+
+**`autopilot`** — off by default. When on, a `Stop` hook checks after every turn
+whether the phase the state file claims is actually finished, and sends you back
+to work when it is not. It is an **agent** hook, so it reads `det-gate.log` and
+the other artifacts rather than believing a claim in the transcript — which is
+what separates it from `/goal`, whose evaluator only sees the conversation. It
+never overrides a hard gate, never pushes past an `AskUserQuestion`, and stays
+silent while background work runs. `reference/completion-gate.md` is its full
+contract; read it before turning this on.
+
+Turn it on for the mechanical stretch from phase 4 to phase 7, where every check
+produces an artifact. Leave it off through phases 1 to 3, which end at gates the
+user has to clear.
 
 ## Risk tiers
 

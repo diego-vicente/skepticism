@@ -66,4 +66,17 @@ assert_eq            "exclude line written only once"   1 "$lines"
 mkdir -p "$WORK/nogit" && cd "$WORK/nogit"
 ( bash "$STATE" protect >/dev/null 2>&1 ); assert_eq "protect outside git exits 0" 0 "$?"
 
+# ── The completion gate is opt-in, and off in a fresh run ───────────────────
+# The Stop hook registers whenever a track skill is invoked, so the ONLY thing
+# keeping it out of an unsuspecting run is this default. If it ever seeds "on",
+# every skeptic run on the machine starts pushing turns.
+mkdir -p "$WORK/gatecheck" && cd "$WORK/gatecheck"
+fresh="$(bash "$STATE" init feat "add login")"
+assert_file_contains "template seeds autopilot: off"  "$fresh" "autopilot: off"
+if grep -q "autopilot: on" "$fresh"; then
+  assert_eq "template never seeds autopilot: on" "absent" "present"
+else
+  assert_eq "template never seeds autopilot: on" "absent" "absent"
+fi
+
 summary

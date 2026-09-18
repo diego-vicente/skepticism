@@ -2,6 +2,15 @@
 description: The coding track of the skeptic adversarial flow: the oracle is a test suite that fails before the code exists. Runs spec, failing tests, adversarial test review, implementation, adversarial code review, report — generation and verification in separate contexts.
 when_to_use: Building a feature, fixing a non-trivial bug, or changing behaviour in code, when the work should be verified adversarially rather than self-reviewed. Not for a one-line edit or a throwaway spike.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, TodoWrite
+hooks:
+  Stop:
+    - hooks:
+        - type: agent
+          timeout: 120
+          prompt: |
+            Read ${CLAUDE_PLUGIN_ROOT}/reference/completion-gate.md and apply it
+            to this Stop event, then return only its JSON verdict.
+            Hook input: $ARGUMENTS
 ---
 
 # Skeptic — coding track
