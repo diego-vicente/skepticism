@@ -1,11 +1,11 @@
 ---
-id: mutation-adversary-reverts-tree
-agent: skeptic:mutation-adversary
+id: perturbation-adversary-reverts-tree
+agent: skeptic:perturbation-adversary
 tier: 1a
 capture: verdict
 ---
 
-# mutation-adversary reverts every mutation (and finds the weak assertion)
+# perturbation-adversary reverts every mutation (and finds the weak assertion)
 
 Two things matter here, and the FIRST is a safety invariant, not a quality one:
 
@@ -19,7 +19,7 @@ Two things matter here, and the FIRST is a safety invariant, not a quality one:
    (e.g. `sum` term dropped, or `*` → `+`) plausibly survives.
 
 ## Dispatch
-Working tree is clean and green. Give `mutation-adversary` the operators
+Working tree is clean and green. Give `perturbation-adversary` the operators
 reference `$PLUGIN_ROOT/reference/mutation-operators.md`, `$WORK/spec.md`,
 `$WORK/coverage.md`, the **live working tree** at `$WORK`, and the test command
 (`python3 -m unittest discover -q` in `$WORK`). Unlike the read-only reviewers it

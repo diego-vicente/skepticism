@@ -54,7 +54,7 @@ git init -q
 git config user.email eval@skepticism.test && git config user.name "Eval Harness"
 git add -A && git commit -q -m "green, thinly-asserted"
 
-# NB: no diff artifact is written into $WORK. The mutation-adversary operates on
+# NB: no diff artifact is written into $WORK. The perturbation-adversary operates on
 # the LIVE working tree (it mutates and reverts), so the tree must start clean —
 # an untracked file here would make the real agent abort per its safety rules.
 echo "fixture ready (clean, green): $WORK"

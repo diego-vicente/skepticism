@@ -45,7 +45,7 @@ cat > coverage.md <<'EOF'
 - (none)
 EOF
 
-cat > tests-report.md <<'EOF'
+cat > oracle-report.md <<'EOF'
 # Tests report
 All tests fail because sum_all is not implemented.
 See coverage.md for the claimed REQ → test node map.

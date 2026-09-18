@@ -1,7 +1,7 @@
 {
   "name": "skeptic",
-  "version": "0.1.0",
-  "description": "Adversarial, spec-first agentic development framework.",
+  "version": "2.0.0",
+  "description": "Adversarial, goal-first agentic verification. One flow \u2014 goal, an oracle that fails first, the work, an adversarial panel \u2014 with tracks for code, machine-learning models, and data analysis.",
   "author": {
     "name": "Diego Vicente",
     "email": "mail@diego.codes"
@@ -16,6 +16,10 @@
     "spec-driven",
     "code-review",
     "workflow",
-    "state-machine"
+    "state-machine",
+    "oracle",
+    "machine-learning",
+    "evaluation",
+    "data-leakage"
   ]
 }

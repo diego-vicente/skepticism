@@ -1,20 +1,20 @@
 ---
 name: spec
-description: "Use to turn a rough feature idea into an approved, verifiable specification. Explores the existing codebase and docs, asks the user clarifying questions one at a time, then writes a design doc plus EARS requirements and Given/When/Then acceptance criteria. Phase 1 of the skeptic coding workflow, but usable on its own."
+description: "Use to turn a rough idea into an approved, verifiable specification — a feature, a model to train, or a question to answer. Explores the existing work, asks clarifying questions one at a time, then writes a design doc plus EARS requirements and Given/When/Then acceptance criteria. Phase 1 of the skeptic flow, but usable on its own."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Define spec
 
-Produce a specification precise enough that tests can be derived from it
+Produce a specification precise enough that an oracle can be derived from it
 mechanically. A vague spec poisons every downstream phase — this is the highest
 -leverage step in the whole workflow, so do not rush it.
 
 ## Process (do these in order)
 
-1. **Explore context first.** Before asking anything, look at the codebase:
-   relevant modules, existing conventions, similar features, tests, and any
-   docs. Ground the conversation in what already exists so you ask sharp
+1. **Explore context first.** Before asking anything, look at what exists:
+   relevant modules, conventions, similar work, the current oracle if there is
+   one (a test suite, an evaluation, a prior analysis), and any docs. Ground the conversation in what already exists so you ask sharp
    questions, not generic ones.
 
 2. **Ask clarifying questions ONE AT A TIME.** Cover, as needed:
@@ -46,7 +46,7 @@ mechanically. A vague spec poisons every downstream phase — this is the highes
 
 Three layers: a design narrative (human-friendly), **EARS requirements** with
 stable REQ-IDs (one unambiguous SHALL each), and **Given/When/Then** acceptance
-criteria that cite the REQ-IDs they cover. Downstream, the test-author maps each
+criteria that cite the REQ-IDs they cover. Downstream, the oracle-author maps each
 REQ-ID to a runnable test node ID in `coverage.md`, so coverage is mechanically
 checkable — the REQ-IDs stay in the run's artifacts and never appear in code or
 test comments. See `reference/spec-format.md` for the full notation; the
@@ -102,6 +102,12 @@ Anything still unresolved (should be empty before approval).
   is in pinning down edges and errors (the `IF/THEN` unwanted-behavior pattern).
 - **Full coverage.** Every REQ-ID is cited by at least one AC. A requirement
   with no covering scenario is an incomplete spec.
+
+**Check each criterion against the track's oracle before you stop.** On the
+coding track, ask whether a test could assert it. On the model track, ask
+whether the held-out evaluation could measure it and what number counts as met.
+On the analysis track, ask what result would falsify it. A criterion the track's
+oracle cannot check is not yet a criterion — sharpen it or drop it.
 
 Self-test each requirement and criterion: *could two reasonable people disagree
 about whether this was satisfied?* If yes, rewrite it until they can't.

@@ -1,0 +1,23 @@
+[
+  {"query": "Did the pricing change actually move conversion? I want this done properly, not cherry-picked.", "should_trigger": true},
+  {"query": "Analyse whether the new onboarding flow reduced churn, and pre-register what would disprove it.", "should_trigger": true},
+  {"query": "Work out if the outage cost us revenue; be rigorous, this goes to the board.", "should_trigger": true},
+  {"query": "Is there a real relationship between store density and basket size, or am I fooling myself?", "should_trigger": true},
+  {"query": "measure the impact of the campaign and make sure we're not p-hacking", "should_trigger": true},
+  {"query": "Test whether the discount cannibalised full-price sales, and say up front what would falsify it.", "should_trigger": true},
+  {"query": "Find out if the new routing actually cut delivery times — I need to defend this number.", "should_trigger": true},
+  {"query": "Did the feature launch increase retention? Decide the method before you look at the result.", "should_trigger": true},
+  {"query": "Investigate whether weather explains the demand spike, rigorously — no post-hoc storytelling.", "should_trigger": true},
+  {"query": "check if the A/B test result is real or noise, and be honest about how many cuts you tried", "should_trigger": true},
+
+  {"query": "How many rows are in the orders table?", "should_trigger": false},
+  {"query": "Make me a bar chart of sales by region.", "should_trigger": false},
+  {"query": "What's the median order value last month?", "should_trigger": false},
+  {"query": "Explain what a p-value is.", "should_trigger": false},
+  {"query": "Export this query result to CSV.", "should_trigger": false},
+  {"query": "Join these two tables on customer_id.", "should_trigger": false},
+  {"query": "just eyeball whether the numbers look weird, quick look", "should_trigger": false},
+  {"query": "What does GROUP BY ROLLUP do?", "should_trigger": false},
+  {"query": "Fix the date parsing in this query.", "should_trigger": false},
+  {"query": "Show me last week's dashboard numbers.", "should_trigger": false}
+]

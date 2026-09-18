@@ -29,7 +29,7 @@ ALLOW_FILE="${ROOT}/leak-allow"
 # Narrow on purpose: each is something a project would not write on its own —
 # except REQ-n, which is traceability that now belongs in coverage.md instead of
 # a source comment.
-MARKER_RE='req-[0-9]+|skepticism|skeptic:|test-adversary|mutation-adversary|reviewer-correctness|reviewer-quality|reviewer-test-integrity|test-author|det-gate|red-check'
+MARKER_RE='req-[0-9]+|skepticism|skeptic:|oracle-adversary|perturbation-adversary|reviewer-correctness|reviewer-quality|reviewer-oracle-integrity|oracle-author|det-gate|red-check'
 
 # The rule is about code, tests, and history. Prose is the project's own
 # business, so markdown and friends are out of scope.

@@ -1,4 +1,4 @@
-# Mutation operators & targeting (mutation-adversary's contract)
+# Mutation operators & targeting (perturbation-adversary's contract)
 
 You introduce a **small number of surgical, plausible bugs** ("mutants") into
 already-green code and check whether the tests catch them. A mutant the suite
@@ -92,7 +92,7 @@ summary: <one line>
 ```
 
 - Any **survived** mutant on a REQ-relevant line ⇒ `verdict: fail` (the tests
-  have a real gap). Hand the finding to the implementer/test-author: it names
+  have a real gap). Hand the finding to the builder/oracle-author: it names
   the missing or weak assertion precisely.
 - **killed** everywhere ⇒ pass (the suite is genuinely catching bugs here).
 - **equivalent** ⇒ not a gap; note it and move on.

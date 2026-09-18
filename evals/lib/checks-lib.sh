@@ -19,7 +19,7 @@ need_file_contains() { grep -qF -- "$2" "$1" 2>/dev/null && _ck_ok "$1 contains 
 need_file_lacks()    { grep -qF -- "$2" "$1" 2>/dev/null && _ck_bad "$1 unexpectedly contains [$2]" || _ck_ok "$1 lacks [$2]"; }
 need_cmd()           { if "$@" >/dev/null 2>&1; then _ck_ok "command succeeds: $*"; else _ck_bad "command failed: $*"; fi; }
 
-# need_tree_clean <repo> — the mutation-adversary's non-negotiable safety
+# need_tree_clean <repo> — the perturbation-adversary's non-negotiable safety
 # invariant: after it runs, every TRACKED file must be byte-for-byte as it
 # started. A mutation is always an edit to a tracked source file, so we ignore
 # untracked noise (e.g. __pycache__/ from running the suite) — that isn't a

@@ -1,6 +1,6 @@
 ---
-name: reviewer-test-integrity
-description: "Audits whether the implementer gamed the tests: tests weakened, deleted, skipped, or made to pass by hardcoding rather than real logic. Compares the current tests against the version approved in phase 3. Phase 6 of the skepticism workflow (standard+ tiers). Read-only."
+name: reviewer-oracle-integrity
+description: "Audits whether the builder gamed the tests: tests weakened, deleted, skipped, or made to pass by hardcoding rather than real logic. Compares the current tests against the version approved in phase 3. Phase 6 of the skepticism workflow (standard+ tiers). Read-only."
 model: inherit
 tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit
@@ -13,15 +13,15 @@ it out.
 
 ## Your inputs (absolute paths, from the dispatch prompt)
 - The **prepared diff file**.
-- The approved tests / `test-review.md` baseline (phase 3 state).
+- The approved tests / `oracle-review.md` baseline (phase 3 state).
 - `coverage.md` — the REQ/AC → test-node-ID map as approved in phase 3, plus the
   criteria the user explicitly agreed to defer.
-- The implementer's report listing any test changes it claims to have made.
+- The builder's report listing any test changes it claims to have made.
 
 ## What to audit
 1. **Diff the tests.** Were any tests modified, deleted, renamed-away, skipped,
    xfail'd, or had assertions removed/loosened since approval?
-   - Every change must be (a) listed in the implementer's report AND (b)
+   - Every change must be (a) listed in the builder's report AND (b)
      genuinely justified (the test contradicted the spec). An *unreported* test
      change is automatically critical.
    - A change reported but weakly justified ("test was too strict") is critical
@@ -52,7 +52,7 @@ verdict: pass | fail
 test_changes:
   - file: <test file>
     change: <what changed>
-    reported_by_implementer: yes | no
+    reported_by_builder: yes | no
     justified: yes | no | weak
 issues:
   - severity: critical | important | minor

@@ -2,10 +2,10 @@
 # context-pack — write the run's bearings file ONCE, so that no subagent has to
 # rediscover the project.
 #
-# Without this, test-author, implementer and mutation-adversary each re-derive
+# Without this, oracle-author, builder and perturbation-adversary each re-derive
 # the same facts (where do tests live? what runs them? what does CI actually
 # call?) from scratch, in separate contexts, paying for it every time. Worse,
-# when the test-author guesses wrong, tests land in a new file beside the suite
+# when the oracle-author guesses wrong, tests land in a new file beside the suite
 # and CI never runs them.
 #
 # Everything written here is evidence-based: each command is reported with the

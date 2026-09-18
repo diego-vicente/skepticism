@@ -3,7 +3,7 @@
 # and that the new tests actually live inside the project's own suite.
 #
 # Phase 2's discipline is "failing tests first." This makes it a deterministic
-# gate instead of taking the test-author's word: it RUNS the suite and requires
+# gate instead of taking the oracle-author's word: it RUNS the suite and requires
 # that it does NOT pass. A suite that passes with no implementation means the
 # tests don't actually exercise the missing behavior — a vacuous red.
 #

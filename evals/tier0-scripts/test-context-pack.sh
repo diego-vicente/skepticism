@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-context-pack.sh — Tier 0. The bearings file is what stops six subagents
 # each rediscovering the same project in six separate contexts, and what stops
-# the test-author guessing a test location. Its value is entirely in being
+# the oracle-author guessing a test location. Its value is entirely in being
 # *correct*: a pack that omits the test command, or reports one the project
 # doesn't use, is worse than no pack at all, because every agent trusts it.
 set -uo pipefail

@@ -1,6 +1,6 @@
 {
   "name": "skepticism",
-  "description": "Adversarial, spec-first agentic development framework.",
+  "description": "Adversarial, goal-first agentic verification. One flow \u2014 goal, an oracle that fails first, the work, an adversarial panel \u2014 with tracks for code, machine-learning models, and data analysis.",
   "owner": {
     "name": "Diego Vicente",
     "email": "mail@diego.codes"
@@ -12,7 +12,7 @@
         "source": "url",
         "url": "https://tangled.org/diego.codes/skepticism"
       },
-      "description": "Adversarial, spec-first agentic development framework."
+      "description": "Adversarial, goal-first agentic verification. One flow \u2014 goal, an oracle that fails first, the work, an adversarial panel \u2014 with tracks for code, machine-learning models, and data analysis."
     }
   ]
 }

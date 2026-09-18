@@ -1,11 +1,11 @@
 ---
-id: test-adversary-catches-weak-test
-agent: skeptic:test-adversary
+id: oracle-adversary-catches-weak-test
+agent: skeptic:oracle-adversary
 tier: 1a
 capture: verdict
 ---
 
-# test-adversary catches a tautological test and an uncovered requirement
+# oracle-adversary catches a tautological test and an uncovered requirement
 
 Phase 3's promise: before a line of implementation exists, the adversary rejects
 a test suite that would pass while the feature is broken. Three planted defects:
@@ -18,7 +18,7 @@ a test suite that would pass while the feature is broken. Three planted defects:
    *verify* the map by resolving its node ids rather than reading it as truth.
 
 ## Dispatch
-Give `test-adversary` `$WORK/spec.md`, `$WORK/tests-report.md`,
+Give `oracle-adversary` `$WORK/spec.md`, `$WORK/oracle-report.md`,
 `$WORK/coverage.md`, the test file `$WORK/test_sum.py`, and the rubric at
 `$PLUGIN_ROOT/reference/test-quality-rubric.md`. No implementation exists yet.
 

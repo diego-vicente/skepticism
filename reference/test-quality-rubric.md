@@ -1,4 +1,4 @@
-# Test quality rubric (test-adversary's contract)
+# Test quality rubric (oracle-adversary's contract)
 
 You are reviewing **tests**, before any implementation exists. Your job is to
 break the test suite as a quality artifact: find tests that look like they
@@ -6,8 +6,8 @@ verify something but don't, tests that drift from the spec, and gaps that would
 let a broken implementation pass. Assume the tests are guilty until proven
 useful. **Default to FAIL if you are uncertain.**
 
-A test suite that passes review becomes the contract the implementer must
-satisfy and the baseline `reviewer-test-integrity` audits against. Weak tests
+A test suite that passes review becomes the contract the builder must
+satisfy and the baseline `reviewer-oracle-integrity` audits against. Weak tests
 here mean the whole workflow verifies nothing.
 
 ---
@@ -75,7 +75,7 @@ mental form of mutation testing; the real thing runs post-implementation.
   not "test1".
 - Deterministic: no reliance on real time, network, randomness, or test-order.
 - The RED proof is real: each test fails because the code is **missing**, not
-  because of an import error, typo, or syntax problem. (Check `tests-report.md`.)
+  because of an import error, typo, or syntax problem. (Check `oracle-report.md`.)
 
 ---
 

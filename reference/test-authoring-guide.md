@@ -1,4 +1,4 @@
-# Test authoring guide (test-author's contract)
+# Test authoring guide (oracle-author's contract)
 
 How to write tests that are *insightful* — that would actually catch a bug — not
 the shallow, tautological tests that pass while the feature is broken. This is

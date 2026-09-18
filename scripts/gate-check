@@ -2,7 +2,7 @@
 """gate-check — PreToolUse hook that enforces the test-first gate.
 
 Blocks edits to *source* files while an active skepticism run is still in a
-pre-implementation phase (spec / red-tests / test-review). This makes the
+pre-work phase (goal / red-oracle / oracle-review). This makes the
 "no production code before the tests are written and reviewed" gate ungameable
 by the model — prose alone gets rationalized away.
 
@@ -13,11 +13,16 @@ Design principles:
 - FAIL-OPEN: any parsing/IO error allows the edit. A buggy gate must never
   brick the user's ability to edit files.
 - Edits to tests and to the run's own artifacts are always allowed — you must
-  be able to write the tests during the test phases.
+  be able to build the oracle during the oracle phases.
+- TRACK-AWARE: a run may list extra paths under `- protected:` in state.md that
+  stay blocked for the WHOLE run, not just the early phases. The model track
+  uses this for the held-out split, which nothing in the work ever writes.
 """
 import sys, os, json, glob, re
 
-PRE_IMPL_PHASES = {"spec", "red-tests", "test-review"}
+PRE_WORK_PHASES = {"goal", "red-oracle", "oracle-review",
+                   # legacy names, so a run started before the rename still gates
+                   "spec", "red-tests", "test-review"}
 TEST_PATH_RE = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(^|/)test_|(_test|\.test|\.spec)\.", re.I)
 
 # Everything the framework owns lives under .skepticism/. The legacy location is
@@ -55,16 +60,34 @@ def main():
 
     target_abs = os.path.abspath(target)
 
-    # Find active runs blocking implementation.
+    # Paths a run protects for its whole life, and runs still in a pre-work
+    # phase. The first list is collected from every active run; the second
+    # only from runs that have not reached phase 4.
+    protected = []
     blocking = []
     for state_file in [p for g in STATE_GLOBS for p in glob.glob(g)]:
         try:
             text = open(state_file, encoding="utf-8").read()
         except Exception:
             continue
+        for line in re.findall(r"^- protected:\s*(.+)$", text, re.M):
+            protected += [x.strip() for x in line.split(",") if x.strip()]
         m = re.search(r"^- phase:\s*(\S+)", text, re.M)
-        if m and m.group(1).strip() in PRE_IMPL_PHASES:
+        if m and m.group(1).strip() in PRE_WORK_PHASES:
             blocking.append(state_file)
+
+    # A protected path is denied in every phase, including phase 4 onwards.
+    for pattern in protected:
+        for match in glob.glob(pattern) + glob.glob(os.path.join(pattern, "**"),
+                                                    recursive=True):
+            if os.path.abspath(match) == target_abs:
+                deny(
+                    "skepticism gate: this path is protected for the whole run "
+                    f"(matched '{pattern}'). Nothing in the work writes to it — "
+                    "on the model track this is the held-out split, and writing "
+                    "to it is leakage. Remove it from '- protected:' in state.md "
+                    "only if you are certain it is not an evaluation artefact."
+                )
 
     if not blocking:
         allow()
@@ -79,10 +102,11 @@ def main():
         allow()
 
     deny(
-        "skepticism gate: an active run is in a pre-implementation phase "
-        f"({', '.join(blocking)}). Production code is blocked until the tests "
-        "are written and pass the adversarial review (phase 3). Write/adjust "
-        "tests, or advance the run's state to 'implement' once test-review passes."
+        "skepticism gate: an active run is in a pre-work phase "
+        f"({', '.join(blocking)}). The deliverable is blocked until the oracle "
+        "is built and passes the adversarial review (phase 3). Build or adjust "
+        "the oracle, or advance the run's state to 'work' once oracle-review "
+        "passes."
     )
 
 

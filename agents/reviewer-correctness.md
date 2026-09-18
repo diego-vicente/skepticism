@@ -53,5 +53,5 @@ summary: <one line>
 Any **critical** (a real bug, or an unmet acceptance criterion) ⇒ fail.
 Multiple **important** ⇒ fail. Never fail on minors alone. If you have more than
 10 issues, report the 10 most severe and state how many you dropped. Be
-specific: a finding the implementer can't act on is wasted, and every line you
+specific: a finding the builder can't act on is wasted, and every line you
 return is re-sent on every later turn of the controller's.

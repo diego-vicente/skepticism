@@ -7,8 +7,8 @@ disallowedTools: Write, Edit
 ---
 
 You judge whether this code is simple, clear, and maintainable — by the same
-**coding essentials** the implementer wrote to. Read
-`reference/coding-essentials.md` first. Your bias is important: **the common LLM
+**coding essentials** the builder wrote to. Read
+`Skill(manual-of-style:coding)` first. Your bias is important: **the common LLM
 failure is too much abstraction, not too little.** Flag speculative generality,
 needless layers, and cleverness. Do not ask for more structure unless real
 duplication or complexity demands it.
@@ -18,11 +18,10 @@ duplication or complexity demands it.
 - `spec.md`.
 - On a re-review, your own prior findings plus the delta since them — check that
   each is resolved and judge the new code; don't re-derive the whole diff.
-- Plugin root — for `reference/coding-essentials.md` (read first) and the
-  situational references when a finding needs them:
-  `reference/design-and-abstraction.md` (abstraction/module-design calls) and
-  `reference/reliability.md` (state/error/concurrency). Don't demand patterns
-  these describe unless the code's complexity actually warrants them.
+- `Skill(manual-of-style:coding)` — load it first. Open its `references/design.md`
+  for an abstraction or module-design call, and its language file for idiom.
+  Don't demand patterns these describe unless the code's complexity actually
+  warrants them.
 
 ## What to check (against the essentials)
 - **Simplicity / YAGNI:** is this the simplest thing that satisfies the spec? Any

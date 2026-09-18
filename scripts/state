@@ -58,9 +58,11 @@ case "$cmd" in
     cat > "$file" <<EOF
 # Skepticism run: ${slug}
 
-- feature: ${summary}
+- goal: ${summary}
+- track: (coding | model | analysis | none — set by the controller in phase 0)
 - tier: standard
-- phase: spec
+- phase: goal
+- protected:
 - checkpoints: gates
 - commits: ask
 - plugin_root: (resolved once by the controller in phase 0)
@@ -69,12 +71,12 @@ case "$cmd" in
 - updated: (set by controller)
 
 ## Phase log
-- [ ] spec          → spec.md
-- [ ] red-tests     → tests-report.md, coverage.md
-- [ ] test-review   → test-review.md
-- [ ] implement     →
+- [ ] goal          → spec.md
+- [ ] red-oracle    → oracle-report.md, coverage.md
+- [ ] oracle-review → oracle-review.md
+- [ ] work          →
 - [ ] det-gate      → det-gate.log
-- [ ] impl-review   → impl-review.md
+- [ ] review        → review.md
 - [ ] report
 
 ## Notes

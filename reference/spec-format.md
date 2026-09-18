@@ -9,7 +9,7 @@ downstream phase. Three layers, each feeding the next:
 3. **Traceability**: a `coverage.md` artifact maps each `REQ-ID` and criterion to
    a runnable **test node ID**, so coverage (requirement → scenario → test) is
    *mechanically* checkable, not a judgment call. This is what lets the
-   test-adversary verify completeness objectively.
+   oracle-adversary verify completeness objectively.
 
 REQ-IDs live in `spec.md` and `coverage.md` — both inside the run directory,
 which never reaches the remote. They must **not** appear in production code or
@@ -83,8 +83,8 @@ Should be empty before approval.
 
 ## The coverage map (`coverage.md`)
 
-Written by the test-author in phase 2, verified by the test-adversary in phase 3,
-re-checked by `reviewer-test-integrity` in phase 6. It is the only place
+Written by the oracle-author in phase 2, verified by the oracle-adversary in phase 3,
+re-checked by `reviewer-oracle-integrity` in phase 6. It is the only place
 requirement traceability is recorded.
 
 ```markdown

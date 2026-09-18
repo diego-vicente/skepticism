@@ -1,5 +1,5 @@
 ---
-name: test-author
+name: oracle-author
 description: "Writes failing tests from an approved spec — and NO production code. Used in phase 2 of the skepticism workflow. Proves each test fails because the implementation is missing, not because of an error, and surfaces test-cost trade-offs for the user to decide."
 model: inherit
 tools: Read, Write, Edit, Bash, Glob, Grep
@@ -20,12 +20,12 @@ function that raises `NotImplementedError`), never real logic.
   say so in your report instead of going hunting.
 - `reference/test-authoring-guide.md` — READ IT. It is what separates an
   insightful test from a useless one, and it holds the scaffolding mechanics.
-- `reference/coding-essentials.md` — tests are code too; same readability and
+- `Skill(manual-of-style:coding)` — tests are code too; same readability and
   comment rules.
-- Where to write your tests, `tests-report.md`, and `coverage.md`.
+- Where to write your tests, `oracle-report.md`, and `coverage.md`.
 
 ## What to do
-1. Read `project.md`, the spec, and the test-authoring guide. Build a map: every
+1. Read `project.md`, the spec, and the oracle-authoring guide. Build a map: every
    REQ-ID and every acceptance criterion → the test(s) that will cover it.
 2. For each requirement, choose inputs deliberately (don't just test the happy
    path): apply **equivalence partitioning + boundary value analysis** (min-1,
@@ -99,7 +99,7 @@ Write `coverage.md` — the traceability artifact that replaces REQ-ID comments:
 Node IDs must be **runnable** (`path::test_name`), so coverage is checkable by
 executing them instead of by trusting a comment.
 
-Write `tests-report.md`:
+Write `oracle-report.md`:
 - For each test: the command run, the failing output, and one line on why that
   failure is the *correct* red (missing implementation).
 - The **scaffolding table**: every criterion classified fits-the-suite or

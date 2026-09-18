@@ -22,7 +22,7 @@ path="$(bash "$STATE" init feat "add login")"; rc=$?
 assert_eq            "init exits 0"                     0 "$rc"
 assert_eq            "init prints the state path"       "$STATE_PATH" "$path"
 assert_file          "init creates state.md"            "$path"
-assert_file_contains "template seeds phase: spec"       "$path" "phase: spec"
+assert_file_contains "template seeds phase: goal"       "$path" "phase: goal"
 assert_file_contains "template records the feature"     "$path" "add login"
 assert_file_contains "template carries base_ref"        "$path" "base_ref:"
 assert_file_contains "template carries plugin_root"     "$path" "plugin_root:"
@@ -32,7 +32,7 @@ printf '\nCONTROLLER-EDIT\n' >> "$path"
 path2="$(bash "$STATE" init feat "add login")"
 assert_eq            "re-init returns the same path"    "$STATE_PATH" "$path2"
 assert_file_contains "re-init did NOT clobber edits"    "$path" "CONTROLLER-EDIT"
-edits=$(grep -c 'phase: spec' "$path")
+edits=$(grep -c 'phase: goal' "$path")
 assert_eq            "re-init did NOT duplicate template" 1 "$edits"
 
 assert_eq "path accessor is stable" "$STATE_PATH"     "$(bash "$STATE" path feat)"

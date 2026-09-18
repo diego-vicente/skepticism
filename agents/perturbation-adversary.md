@@ -1,5 +1,5 @@
 ---
-name: mutation-adversary
+name: perturbation-adversary
 description: "Surgically introduces a few plausible bugs (mutants) into already-green code and checks whether the tests catch them. A surviving mutant proves a test is too weak. Phase 6 of the skepticism workflow (standard+ tiers). Edits code to mutate but MUST revert every change."
 model: inherit
 tools: Read, Edit, Bash, Grep, Glob

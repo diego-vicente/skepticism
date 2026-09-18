@@ -1,0 +1,23 @@
+[
+  {"query": "Train a churn model on last year's subscriptions and I want the evaluation to be trustworthy.", "should_trigger": true},
+  {"query": "Fine-tune the embedding model and prove it actually beats the current one.", "should_trigger": true},
+  {"query": "Build a demand forecast; I've been burned by leakage before, be rigorous.", "should_trigger": true},
+  {"query": "We need a classifier for support tickets, with a held-out set and a real baseline.", "should_trigger": true},
+  {"query": "retrain the ranking model and verify the lift isn't just noise", "should_trigger": true},
+  {"query": "Improve the recommender's precision at 10 and show me the confidence interval.", "should_trigger": true},
+  {"query": "Train a fraud detector — this goes into production, so I want the eval adversarially reviewed.", "should_trigger": true},
+  {"query": "Build a price elasticity model and make sure we're not tuning on the test set.", "should_trigger": true},
+  {"query": "Swap the encoder for the new one and show me it's a real improvement, not seed luck.", "should_trigger": true},
+  {"query": "fit a lead-scoring model with a proper temporal split, i don't want future data leaking in", "should_trigger": true},
+
+  {"query": "What's the difference between precision and recall?", "should_trigger": false},
+  {"query": "Load this parquet file into a dataframe and show me the first ten rows.", "should_trigger": false},
+  {"query": "Explain how gradient boosting works.", "should_trigger": false},
+  {"query": "Bump the scikit-learn version in pyproject.toml.", "should_trigger": false},
+  {"query": "plot a histogram of the age column", "should_trigger": false},
+  {"query": "What does this sklearn warning mean?", "should_trigger": false},
+  {"query": "Rename the `df2` variable to `features` in this notebook.", "should_trigger": false},
+  {"query": "quickly fit a model just to see if the data loads, throwaway", "should_trigger": false},
+  {"query": "How do I save a torch checkpoint?", "should_trigger": false},
+  {"query": "Convert this CSV to parquet.", "should_trigger": false}
+]
